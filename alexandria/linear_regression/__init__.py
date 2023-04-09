@@ -1,0 +1,6 @@
+from .autocorrelated_bayesian_regression import AutocorrelatedBayesianRegression
+from .heteroscedastic_bayesian_regression import HeteroscedasticBayesianRegression
+from .hierarchical_bayesian_regression import HierarchicalBayesianRegression
+from .independent_bayesian_regression import IndependentBayesianRegression
+from .maximum_likelihood_regression import MaximumLikelihoodRegression
+from .simple_bayesian_regression import SimpleBayesianRegression
