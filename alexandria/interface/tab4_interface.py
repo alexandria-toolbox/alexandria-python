@@ -42,7 +42,7 @@ class Tab4Interface(object):
         # application selection label
         self.t4_txt2 = QLabel(self)
         self.t4_txt2.move(30, 105)
-        self.t4_txt2.setFixedSize(200, 30)
+        self.t4_txt2.setFixedSize(260, 30)
         self.t4_txt2.setText(' none') 
         self.t4_txt2.setAlignment(Qt.AlignLeft)
         self.t4_txt2.setStyleSheet('font-size: 12pt; font-family: Serif; \
@@ -498,10 +498,10 @@ class Tab4Interface(object):
         split_image_list = []
         # loop over files and separate each name into application, variable and response
         for image in image_list:
-            # application is first part, before underscore
-            application = image.split('_')[0]
-            # variables and response are parts after underscore, removing png extentions
-            variable_and_response = image.split('_', maxsplit = 1)[1].split('.png')[0]
+            # application is first part, before hyphen
+            application = image.split('-')[0]
+            # variables and response are parts after hyphen, removing png extentions
+            variable_and_response = image.split('-', maxsplit = 1)[1].split('.png')[0]
             # variable is part before @, response part after @ (if any)
             split_variable_and_response = variable_and_response.split('@')
             variable = split_variable_and_response[0]
@@ -515,8 +515,8 @@ class Tab4Interface(object):
         applications = list(dict.fromkeys([element[0] for element in split_image_list]))
         # reorganize applications so that they are in the right order
         sorted_applications = []        
-        possible_applications = ['fit', 'residuals', 'forecasts', 'conditional_forecasts', \
-                                 'irf', 'fevd', 'hd']
+        possible_applications = ['fit', 'residuals', 'shocks', 'steady_state', 'forecasts', \
+                                 'conditional_forecasts', 'irf', 'fevd', 'hd']
         for application in possible_applications:
             if application in applications:
                 sorted_applications.append(application)
@@ -693,7 +693,7 @@ class Tab4Interface(object):
 
 
     def __set_application_label(self):
-        self.t4_txt2.setText(' ' + self.current_application) 
+        self.t4_txt2.setText(' ' + self.current_application.replace('_', ' ')) 
         self.t4_txt2.repaint()        
 
 
@@ -744,7 +744,7 @@ class Tab4Interface(object):
         
     
     def __update_image(self):
-        image_name = self.current_application + '_' + self.current_variable
+        image_name = self.current_application + '-' + self.current_variable
         if self.current_response != 'none':
             image_name += '@' + self.current_response
         image_name += '.png'

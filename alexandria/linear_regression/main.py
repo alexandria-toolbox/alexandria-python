@@ -1,20 +1,23 @@
 # imports
 from alexandria.processor.input_processor import *
-from alexandria.results.regression_results import *
-from alexandria.graphics.regression_graphics import *
+from alexandria.results.results import *
+from alexandria.graphics.graphics import *
 from alexandria.interface.graphical_user_interface import GraphicalUserInterface
+import alexandria.console.console_utilities as cu
+from os.path import join
 
 
 def linear_regression_main_code(user_inputs):
 
 
     #---------------------------------------------------
-    # Result Initialization and Alexandria header
+    # Alexandria header and estimation start
     #--------------------------------------------------- 
 
 
-    # initiate regression results
-    res = RegressionResults()
+    # display Alexandria header
+    cu.print_alexandria_header()
+    cu.print_start_message()
 
 
     #---------------------------------------------------
@@ -75,16 +78,10 @@ def linear_regression_main_code(user_inputs):
     y_p = ip.y_p
     X_p = ip.X_p
     Z_p = ip.Z_p
-
-
-    #---------------------------------------------------
-    # Result file creation
-    #---------------------------------------------------  
     
+    # initialize timer
+    ip.input_timer('start')
     
-    # initiate regression results
-    res.create_result_file(project_path, save_results)
-
 
     #---------------------------------------------------
     # Model creation
@@ -103,7 +100,8 @@ def linear_regression_main_code(user_inputs):
         lr = SimpleBayesianRegression(endogenous, exogenous, constant = constant, trend = trend, \
              quadratic_trend = quadratic_trend, b_exogenous = b, V_exogenous = V, b_constant = b_constant, \
              V_constant = V_constant, b_trend = b_trend, V_trend = V_trend, b_quadratic_trend = b_quadratic_trend, \
-             V_quadratic_trend = V_quadratic_trend, credibility_level = model_credibility, verbose = progress_bar)
+             V_quadratic_trend = V_quadratic_trend, hyperparameter_optimization = hyperparameter_optimization, \
+             optimization_type = optimization_type, credibility_level = model_credibility, verbose = progress_bar)
 
     # hierarchical Bayesian regression
     elif regression_type == 3:
@@ -111,8 +109,9 @@ def linear_regression_main_code(user_inputs):
         lr = HierarchicalBayesianRegression(endogenous, exogenous, constant = constant, trend = trend, \
              quadratic_trend = quadratic_trend, b_exogenous = b, V_exogenous = V, b_constant = b_constant, \
              V_constant = V_constant, b_trend = b_trend, V_trend = V_trend, b_quadratic_trend = b_quadratic_trend, \
-             V_quadratic_trend = V_quadratic_trend, alpha = alpha, delta = delta, credibility_level = model_credibility, \
-             verbose = progress_bar)
+             V_quadratic_trend = V_quadratic_trend, alpha = alpha, delta = delta, \
+             hyperparameter_optimization = hyperparameter_optimization, optimization_type = optimization_type, \
+             credibility_level = model_credibility, verbose = progress_bar)
 
     # independent Bayesian regression
     elif regression_type == 4:
@@ -143,16 +142,6 @@ def linear_regression_main_code(user_inputs):
             V_trend = V_trend, b_quadratic_trend = b_quadratic_trend, V_quadratic_trend = V_quadratic_trend, \
             alpha = alpha, delta = delta, p = p, H = H, iterations = iterations, \
             burn = burnin, credibility_level = model_credibility, verbose = progress_bar)      
-            
-
-    #---------------------------------------------------
-    # Model optimization
-    #---------------------------------------------------     
-    
-    
-    # apply if regression is simple Bayesian or hierarchical, and optimization is selected
-    if (regression_type == 2 or regression_type == 3) and hyperparameter_optimization:
-        lr.optimize_hyperparameters(optimization_type)
     
 
     #---------------------------------------------------
@@ -171,7 +160,7 @@ def linear_regression_main_code(user_inputs):
     
     # apply if in-sample fit and residuals is selected
     if insample_fit:
-        lr.fit_and_residuals()
+        lr.insample_fit()
         
         
     #---------------------------------------------------
@@ -201,37 +190,75 @@ def linear_regression_main_code(user_inputs):
             
             
     #---------------------------------------------------
-    # Model results: create, display and save
+    # Model processor: prepare elements for results
     #---------------------------------------------------               
-            
-            
-    # create, display and save result summary
-    res.result_summary(ip, lr)
+         
     
-    # create and save model settings
-    res.settings_summary()
+    # print estimation completion
+    cu.print_completion_message(progress_bar)
+
+    # end estimation timer
+    ip.input_timer('end')
+
+    # make information dictionary for result class
+    ip.make_results_information()
+    results_information = ip.results_information
     
-    # create and save model applications
-    res.application_summary()
+    # make information dictionary for graphics class
+    ip.make_graphics_information()
+    graphics_information = ip.graphics_information
+        
+
+    #---------------------------------------------------
+    # Model results: create, display and save
+    #--------------------------------------------------- 
+
+
+    # recover path to result folder
+    results_path = join(project_path, 'results')
     
+    # initialize results class
+    # res = Results(lr)
+    res = Results(lr, results_information)
+    
+    # create and save input summary if relevant
+    if save_results:
+        res.make_input_summary()
+        res.save_input_summary(results_path)
+    
+    # create, show and save estimation summary if relevant
+    res.make_estimation_summary()
+    res.show_estimation_summary()
+    if save_results:
+        res.save_estimation_summary(results_path)
+        
+    # create and save application summary if relevant
+    if save_results:
+        res.make_application_summary()
+        res.save_application_summary(results_path)
+        
     
     #---------------------------------------------------
     # Model graphics: generate and save
     #---------------------------------------------------
 
-
+    
     # if graphic selection is selected
     if create_graphics:
         
-        # initiate graphic creation
-        rg = RegressionGraphics(ip, lr)
+        # recover path to result folder
+        graphics_path = join(project_path, 'graphics')
         
-        # generate graphics
-        rg.make_graphics()
+        # initialize graphics class
+        grp = Graphics(lr, graphics_information, graphics_path, True)
+        
+        # run graphics for all applications inturn
+        grp.insample_fit_graphics(False, True)
+        grp.forecast_graphics(False, True)
         
         # display graphics
-        gui = GraphicalUserInterface(view_graphics = True)
-        
+        gui = GraphicalUserInterface(view_graphics = True)        
+                
 
     #---------------------------------------------------
     # Final model return
@@ -239,7 +266,5 @@ def linear_regression_main_code(user_inputs):
     
     
     return lr
-
-
 
 

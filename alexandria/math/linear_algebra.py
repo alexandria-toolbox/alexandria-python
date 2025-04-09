@@ -57,6 +57,72 @@ def cholesky_nspd(A):
     return G
 
 
+
+def backslash_inversion(A, B):
+    
+    """
+    backslash_inversion(A, B)
+    replicates Matlab backslash operator A \ B, which is roughly equal to inv(A) @ B
+    
+    parameters:
+    A : ndarray of shape (m,n)
+        square, invertible matrix
+    B : ndarray of shape (n,n)
+        matrix of dimension compatible with inv(A)
+        
+    returns:
+    C : ndarray of shape (m,n)
+        result of product inv(A) @ B   
+    """
+
+    C = sla.solve(A, B)
+    return C
+
+
+
+def slash_inversion(A, B):
+    
+    """
+    slash_inversion(A, B)
+    replicates Matlab slash operator A / B, which is roughly equal to A @ inv(B)
+    
+    parameters:
+    A : ndarray of shape (m,n)
+        matrix of dimension compatible with inv(B) 
+    B : ndarray of shape (n,n)
+        square, invertible matrix
+        
+    returns:
+    C : ndarray of shape (m,n)
+        result of product A @ inv(B)   
+    """
+
+    C = sla.solve(B.T, A.T).T
+    return C
+
+
+def invert_lower_triangular_matrix(X):
+    
+    """
+    invert_lower_triangular_matrix(X)
+    computes inverse of lower triangular matrix efficiently, by forward substitution
+    
+    parameters:
+    X : ndarray of shape (n,n)
+        lower triangular matrix
+        
+    returns:
+    X_inverse : ndarray of shape (n,n)
+        inverse of X
+    """
+    
+    # dimension of G
+    dimension = X.shape[0]
+    # invert it by back substitution
+    X_inverse = sla.solve_triangular(X, np.identity(dimension), lower = True)
+    return X_inverse
+
+
 def invert_spd_matrix(A):
     
     """
@@ -83,16 +149,39 @@ def invert_spd_matrix(A):
     return A_inverse
  
   
-def triangular_factorization(X):
+def determinant_spd_matrix(A):
+
+    """
+    determinant_spd_matrix(A)
+    produces the log determinant of A, where A is symmetric and positive definite
+    based on properties m.15, m.25 and m.28
+    
+    parameters:
+    A : ndarray of shape (n,n)
+        invertible, symmetric and positive definite
+        
+    returns:
+    log_determinant_A : float
+        log determinant of A
+    """
+    
+    G = cholesky_nspd(A)
+    log_determinant_A = 2 * np.sum(np.log(np.diag(G)))
+    return log_determinant_A
+    
+    
+def triangular_factorization(X, is_cholesky = False):
     
     """
-    triangular_factorization(X)
+    triangular_factorization(X, is_cholesky = False)
     triangular factorization of spd matrix
     based on property m.34
     
     parameters:
     X: ndarray of shape (n,n)
         matrix to factor (symmetric and positive definite)
+    is_cholesky: bool
+        if True, assumes that spd matrix X is replaced by its Cholesky factor
         
     returns:
     F: ndarray of shape (n,n)
@@ -101,7 +190,10 @@ def triangular_factorization(X):
         diagonal factor (only reports the diagonal)
     """
 
-    G = cholesky_nspd(X)
+    if is_cholesky:
+        G = X
+    else:
+        G = cholesky_nspd(X)
     diagonal = np.diag(G)
     F = G / diagonal
     L = diagonal ** 2
@@ -213,7 +305,21 @@ def lag_polynomial(X, gamma):
     return Y
 
 
+def nullspace(X):
 
+    """
+    Generates nullspace of X, as orthonormal basis
 
+    parameters:
+    X : ndarray of shape (n,m)
+        array from which nullspace is computed
+    
+    returns:
+    null_space : ndarray of shape (m,k)
+        k-dimensional orthonormal basis of nullspace
+    """    
+    
+    null_space = sla.null_space(X) 
+    return null_space
 
 

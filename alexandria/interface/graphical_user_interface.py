@@ -8,6 +8,7 @@ from PyQt5.QtGui import QFont
 from alexandria.interface.default_input_interface import DefaultInputInterface
 from alexandria.interface.tab1_interface import Tab1Interface
 from alexandria.interface.tab2_regression_interface import Tab2RegressionInterface
+from alexandria.interface.tab2_vector_autoregression_interface import Tab2VectorAutoregressionInterface
 from alexandria.interface.tab3_interface import Tab3Interface
 from alexandria.interface.tab4_interface import Tab4Interface
 from alexandria.interface.tab5_interface import Tab5Interface
@@ -15,7 +16,7 @@ from alexandria.interface.tab5_interface import Tab5Interface
 
 
 class GraphicalUserInterface(QMainWindow, DefaultInputInterface, Tab1Interface, \
-                             Tab2RegressionInterface, \
+                             Tab2RegressionInterface, Tab2VectorAutoregressionInterface, \
                              Tab3Interface, Tab4Interface, Tab5Interface):
 
 
@@ -128,6 +129,7 @@ class GraphicalUserInterface(QMainWindow, DefaultInputInterface, Tab1Interface, 
         self.tab_pbt5.clicked.connect(self.cb_tab_pbt5)
         # for incoming lazy evaluation of tab 2, set all possible tabs 2 as not yet created
         self.created_tab_2_lr = False
+        self.created_tab_2_var = False
         # initiate user interrupt as True (will become False if interface is properly validated later)
         self.user_interrupt = True
         
@@ -152,8 +154,17 @@ class GraphicalUserInterface(QMainWindow, DefaultInputInterface, Tab1Interface, 
                 self.create_tab_2_lr()
             # show tab 2 for linear regression    
             self.show_tab_2_lr()
-        # set current tab as tab 2, linear regression
-        self.current_tab = 'tab_2_lr'
+            # set current tab as tab 2, linear regression
+            self.current_tab = 'tab_2_lr' 
+        # else, if tab2 is called for vector autoregression:    
+        elif self.user_inputs['tab_1']['model'] == 2:
+            # if tab 2 for vector autoregression does not exist, create it
+            if not self.created_tab_2_var:
+                self.create_tab_2_var()
+            # show tab 2 for vector autoregression 
+            self.show_tab_2_var() 
+            # set current tab as tab 2, vector autoregression
+            self.current_tab = 'tab_2_var'
         # update tab button color
         self.tab_pbt2.setStyleSheet("background:rgb" + str(self.tab_color) + ";")
 
@@ -187,7 +198,9 @@ class GraphicalUserInterface(QMainWindow, DefaultInputInterface, Tab1Interface, 
         
     def create_tab_2(self):
         if self.user_inputs['tab_1']['model'] == 1:
-            self.create_tab_2_lr()         
+            self.create_tab_2_lr()   
+        elif self.user_inputs['tab_1']['model'] == 2:
+            self.create_tab_2_var()
         
         
     def hide_current_tab(self):  
@@ -196,7 +209,10 @@ class GraphicalUserInterface(QMainWindow, DefaultInputInterface, Tab1Interface, 
             self.hide_tab_1()
         # if current tab is tab 2 for regression, hide it
         elif self.current_tab == 'tab_2_lr':
-            self.hide_tab_2_lr()                
+            self.hide_tab_2_lr()  
+        # if current tab is tab 2 for vector autoregression, hide it
+        elif self.current_tab == 'tab_2_var':
+            self.hide_tab_2_var()               
         # if current tab is tab 3, hide it
         elif self.current_tab == 'tab_3':
             self.hide_tab_3()

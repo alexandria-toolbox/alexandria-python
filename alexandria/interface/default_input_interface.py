@@ -23,6 +23,7 @@ class DefaultInputInterface(object):
         # sub dictionaries for each of the three tabs taking user inputs
         user_inputs['tab_1'] = {}
         user_inputs['tab_2_lr'] = {}
+        user_inputs['tab_2_var'] = {}
         user_inputs['tab_3'] = {}
         
         # default values for tab 1
@@ -68,6 +69,37 @@ class DefaultInputInterface(object):
         user_inputs['tab_2_lr']['marginal_likelihood'] = False
         user_inputs['tab_2_lr']['hyperparameter_optimization'] = False
         user_inputs['tab_2_lr']['optimization_type'] = 1
+
+        # default values for tab 2, vector autoregression
+        user_inputs['tab_2_var']['var_type'] = 1
+        user_inputs['tab_2_var']['iterations'] = '3000'
+        user_inputs['tab_2_var']['burnin'] = '1000'
+        user_inputs['tab_2_var']['model_credibility'] = '0.95'
+        user_inputs['tab_2_var']['constant'] = True
+        user_inputs['tab_2_var']['trend'] = False
+        user_inputs['tab_2_var']['quadratic_trend'] = False
+        user_inputs['tab_2_var']['lags'] = '4'
+        user_inputs['tab_2_var']['ar_coefficients'] = '0.9'
+        user_inputs['tab_2_var']['pi1'] = '0.1'
+        user_inputs['tab_2_var']['pi2'] = '0.5'
+        user_inputs['tab_2_var']['pi3'] = '1'
+        user_inputs['tab_2_var']['pi4'] = '100'
+        user_inputs['tab_2_var']['pi5'] = '1'
+        user_inputs['tab_2_var']['pi6'] = '0.1'
+        user_inputs['tab_2_var']['pi7'] = '0.1'
+        user_inputs['tab_2_var']['proxy_variables'] = ''
+        user_inputs['tab_2_var']['lamda'] = '0.2'
+        user_inputs['tab_2_var']['proxy_prior'] = 1
+        user_inputs['tab_2_var']['insample_fit'] = False
+        user_inputs['tab_2_var']['constrained_coefficients'] = False
+        user_inputs['tab_2_var']['sums_of_coefficients'] = False
+        user_inputs['tab_2_var']['initial_observation'] = False
+        user_inputs['tab_2_var']['long_run'] = False
+        user_inputs['tab_2_var']['stationary'] = False
+        user_inputs['tab_2_var']['marginal_likelihood'] = False
+        user_inputs['tab_2_var']['hyperparameter_optimization'] = False
+        user_inputs['tab_2_var']['coefficients_file'] = ''
+        user_inputs['tab_2_var']['long_run_file'] = ''
         
         # default values for tab 3
         user_inputs['tab_3']['forecast'] = False
@@ -83,6 +115,7 @@ class DefaultInputInterface(object):
         user_inputs['tab_3']['forecast_periods'] = ''
         user_inputs['tab_3']['conditional_forecast_type'] = 1
         user_inputs['tab_3']['forecast_file'] = ''
+        user_inputs['tab_3']['conditional_forecast_file'] = ''
         user_inputs['tab_3']['forecast_evaluation'] = False
         user_inputs['tab_3']['irf_periods'] = ''
         user_inputs['tab_3']['structural_identification'] = 1
@@ -152,10 +185,12 @@ class DefaultInputInterface(object):
         self.t3_edt6.setText(self.user_inputs['tab_3']['forecast_periods'])
         self.t3_mnu1.setCurrentIndex(self.user_inputs['tab_3']['conditional_forecast_type'] - 1)
         self.t3_edt7.setText(self.user_inputs['tab_3']['forecast_file'])
+        self.t3_edt8.setText(self.user_inputs['tab_3']['conditional_forecast_file'])
         self.t3_cbx1.setChecked(False)
-        self.t3_edt8.setText(self.user_inputs['tab_3']['irf_periods'])
+        self.t3_edt9.setText(self.user_inputs['tab_3']['irf_periods'])
         self.t3_mnu2.setCurrentIndex(self.user_inputs['tab_3']['structural_identification'] - 1)
-        self.t3_edt9.setText(self.user_inputs['tab_3']['structural_identification_file'])
+        self.t3_edt10.setText(self.user_inputs['tab_3']['structural_identification_file'])
+        
             
     
     

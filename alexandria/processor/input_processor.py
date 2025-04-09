@@ -1,9 +1,10 @@
 # import
 from alexandria.processor.regression_processor import RegressionProcessor
+from alexandria.processor.vector_autoregression_processor import VectorAutoregressionProcessor
 import alexandria.processor.input_utilities as iu
 
 
-class InputProcessor(RegressionProcessor):
+class InputProcessor(RegressionProcessor, VectorAutoregressionProcessor):
 
 
     #---------------------------------------------------
@@ -23,9 +24,49 @@ class InputProcessor(RegressionProcessor):
         self.__tab_2_inputs()
         # then get inputs of tab 3 of graphical interface (again common to all models)
         self.__tab_3_inputs()
-        # finally, load all relevant data files
+        # load all relevant data files
         self.__data_inputs()
         
+        
+    def input_timer(self, tag):
+        if tag == 'start':
+            self.estimation_start = iu.get_timer()
+        elif tag == 'end':
+            self.estimation_end = iu.get_timer()
+            
+            
+    def make_results_information(self):
+        # initialize information dictionary
+        self.results_information = {}
+        # make general information
+        self.__make_general_information()
+        # if model is model 1, additionally make information for linear regression
+        if self.model == 1:
+            self._make_regression_information()
+        # if model is model 2, additionally make information for VAR models
+        elif self.model == 2:
+            self._make_var_information()
+        # finally add complementary information for applications
+        self.__make_application_information()
+            
+
+    def make_graphics_information(self):
+        # initialize graphics dictionary
+        self.graphics_information = {}
+        # get endogenous variable
+        self.graphics_information['endogenous_variables'] = self.endogenous_variables
+        # get exogenous variables
+        if len(self.exogenous_variables) == 0:
+            self.graphics_information['exogenous_variables'] = []
+        else:
+            self.graphics_information['exogenous_variables'] = self.exogenous_variables
+        # if model is model 1, additionally make information for linear regression
+        if self.model == 1:
+            self._make_regression_graphics_information()
+        # if model is model 2, additionally make information for vector autoregression
+        elif self.model == 2:
+            self._make_var_graphics_information()
+            
 
     #---------------------------------------------------
     # Methods (Access = private)
@@ -59,7 +100,10 @@ class InputProcessor(RegressionProcessor):
         # if model is model 1, get user inputs for linear regression
         if self.model == 1:
             self._regression_inputs()
-
+        # if model is model 2, get user inputs for vector autoregression
+        elif self.model ==2:
+            self._vector_autoregression_inputs()
+    
         
     def __tab_3_inputs(self):
         # recover forecast decision
@@ -88,6 +132,8 @@ class InputProcessor(RegressionProcessor):
         self.conditional_forecast_type = self.__get_conditional_forecast_type()
         # recover name of forecast input file
         self.forecast_file = self.__get_forecast_file()
+        # recover name of conditional forecast input file
+        self.conditional_forecast_file = self.__get_conditional_forecast_file()
         # recover forecast evaluation decision
         self.forecast_evaluation = self.__get_forecast_evaluation()
         # recover number of irf periods
@@ -102,12 +148,15 @@ class InputProcessor(RegressionProcessor):
         # if model is model 1, get data for linear regression
         if self.model == 1:
             self._regression_data()
+        # else, if model is model 2, get data for vector autoregression
+        elif self.model == 2:
+            self._vector_autoregression_data()
         
              
     def __get_model(self):
         model = self.user_inputs['tab_1']['model']
-        if model not in [1]:
-            raise TypeError('Value error for model. Should be equal to 1.') 
+        if model not in [1,2]:
+            raise TypeError('Value error for model. Should be 1 or 2.')
         return model
         
     
@@ -298,8 +347,10 @@ class InputProcessor(RegressionProcessor):
 
 
     def __get_forecast_periods(self):
-        forecast_periods = self.user_inputs['tab_3']['forecast_periods']       
+        forecast_periods = self.user_inputs['tab_3']['forecast_periods'] 
         if not isinstance(forecast_periods, (int, str)):
+            raise TypeError('Type error for forecast periods. Should be integer.')
+        if self.model in [2] and (self.forecast or self.conditional_forecast) and not forecast_periods:
             raise TypeError('Type error for forecast periods. Should be integer.')
         if forecast_periods and isinstance(forecast_periods, str):
             if forecast_periods.isdigit():
@@ -326,6 +377,14 @@ class InputProcessor(RegressionProcessor):
         return forecast_file    
     
     
+    def __get_conditional_forecast_file(self):
+        conditional_forecast_file = self.user_inputs['tab_3']['conditional_forecast_file']
+        if not isinstance(conditional_forecast_file, str):
+            raise TypeError('Type error for conditional forecast file. Should be string.')
+        conditional_forecast_file = iu.fix_string(conditional_forecast_file)
+        return conditional_forecast_file  
+    
+    
     def __get_forecast_evaluation(self):
         forecast_evaluation = self.user_inputs['tab_3']['forecast_evaluation']
         if not isinstance(forecast_evaluation, bool):
@@ -336,6 +395,8 @@ class InputProcessor(RegressionProcessor):
     def __get_irf_periods(self):
         irf_periods = str(self.user_inputs['tab_3']['irf_periods'])        
         if not isinstance(irf_periods, (int, str)):
+            raise TypeError('Type error for irf periods. Should be integer.')
+        if self.model in [2] and self.irf and not irf_periods:
             raise TypeError('Type error for irf periods. Should be integer.')
         if irf_periods and isinstance(irf_periods, str):
             if irf_periods.isdigit():
@@ -349,9 +410,13 @@ class InputProcessor(RegressionProcessor):
     
     def __get_structural_identification(self):
         structural_identification = self.user_inputs['tab_3']['structural_identification']
-        if structural_identification not in [1, 2]:
-            raise TypeError('Value error for structural identification. Should be 1 or 2.')  
-        return structural_identification    
+        if structural_identification not in [1, 2, 3, 4]:
+            raise TypeError('Value error for structural identification. Should be 1, 2, 3 or 4.')
+        if self.user_inputs['tab_2_var']['var_type'] == 1 and structural_identification not in [1, 2, 3]:
+            raise TypeError('Value error for structural identification. Identification by restriction is not available for maximum likelihood VAR.')            
+        if self.user_inputs['tab_2_var']['var_type'] == 7 and structural_identification not in [1, 4]:
+            raise TypeError('Value error for structural identification. Should be 1 (none) or 4 (restrictions) when selecting a proxy SVAR.')
+        return structural_identification
     
     
     def __get_structural_identification_file(self):
@@ -361,4 +426,75 @@ class InputProcessor(RegressionProcessor):
         structural_identification_file = iu.fix_string(structural_identification_file)
         return structural_identification_file
     
+
+    def __make_general_information(self):
+        # get estimation start date
+        estimation_start = self.estimation_start.strftime('%Y-%m-%d %H:%M:%S')
+        self.results_information['estimation_start'] = estimation_start
+        # get estimation start date
+        estimation_end = self.estimation_end.strftime('%Y-%m-%d %H:%M:%S')
+        self.results_information['estimation_end'] = estimation_end  
+        # get endogenous variable
+        self.results_information['endogenous_variables'] = self.endogenous_variables
+        # get exogenous variables
+        if len(self.exogenous_variables) == 0:
+            self.results_information['exogenous_variables'] = ['none']
+        else:
+            self.results_information['exogenous_variables'] = self.exogenous_variables
+        # get sample start date
+        self.results_information['sample_start'] = self.start_date
+        # get sample end date
+        self.results_information['sample_end'] = self.end_date
+        # get data frequency
+        if self.frequency == 1:
+            frequency = 'cross-sectional/undated'
+        elif self.frequency == 2:
+            frequency = 'annual'            
+        elif self.frequency == 3:
+            frequency = 'quarterly'   
+        elif self.frequency == 4:
+            frequency = 'monthly'   
+        elif self.frequency == 5:
+            frequency = 'weekly'   
+        elif self.frequency == 6:
+            frequency = 'daily'        
+        self.results_information['frequency'] = frequency  
+        # get path to project folder
+        self.results_information['project_path'] = self.project_path
+        # get data file
+        self.results_information['data_file'] = self.data_file
+        # get progress bar
+        self.results_information['progress_bar'] = self.progress_bar
+        # get graphics and figures
+        self.results_information['create_graphics'] = self.create_graphics
+        # get result save
+        self.results_information['save_results'] = self.save_results
+        
+
+    def __make_application_information(self):
+        # forecasts
+        self.results_information['forecast'] = self.forecast
+        self.results_information['forecast_credibility'] = self.forecast_credibility
+        # conditional forecasts
+        self.results_information['conditional_forecast'] = self.conditional_forecast
+        self.results_information['conditional_forecast_credibility'] = self.conditional_forecast_credibility
+        # irf
+        self.results_information['irf'] = self.irf
+        self.results_information['irf_credibility'] = self.irf_credibility        
+        # fevd
+        self.results_information['fevd'] = self.fevd
+        self.results_information['fevd_credibility'] = self.fevd_credibility   
+        # fevd
+        self.results_information['hd'] = self.hd
+        self.results_information['hd_credibility'] = self.hd_credibility 
+        # forecast specifications
+        self.results_information['forecast_periods'] = self.forecast_periods
+        self.results_information['conditional_forecast_type'] = self.conditional_forecast_type
+        self.results_information['forecast_file'] = self.forecast_file
+        self.results_information['conditional_forecast_file'] = self.conditional_forecast_file
+        self.results_information['forecast_evaluation'] = self.forecast_evaluation
+        # irf specifications
+        self.results_information['irf_periods'] = self.irf_periods
+        self.results_information['structural_identification'] = self.structural_identification
+        self.results_information['structural_identification_file'] = self.structural_identification_file
 

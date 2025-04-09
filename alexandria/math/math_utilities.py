@@ -1,6 +1,7 @@
 # imports
 import numpy as np
 import math
+from scipy.special import multigammaln
 
 
 # module math_utilities
@@ -71,4 +72,28 @@ def gamma(x):
     return y    
 
 
+def log_multivariate_gamma(x, n):
+    
+    """
+    log_multivariate_gamma(x, n)
+    log of multivariate Gamme function
+    
+    parameters:
+    x : float
+        argument of Gamma function
+    n : int
+        dimension of function
+    
+    returns:
+    y : float
+        log value returned by the multivariate gamma function
+    """    
+    
+    y = multigammaln(x, n)
+    return y
+    
+    
+    
+    
+    
 

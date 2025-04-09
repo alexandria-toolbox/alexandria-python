@@ -84,10 +84,10 @@ def efficient_multivariate_normal(m, inv_Sigma):
     return x
 
    
-def matrix_normal(M, Sigma, Omega):
+def matrix_normal(M, Sigma, Omega, is_chol_Sigma = False, is_chol_Omega = False):
     
     """
-    matrix_normal(M, Sigma, Omega)
+    matrix_normal(M, Sigma, Omega, is_chol_Sigma = False, is_chol_Omega = False)
     random number generator for the matrix normal distribution
     based on algorithm d.15
     
@@ -97,14 +97,27 @@ def matrix_normal(M, Sigma, Omega):
     Sigma : ndarray of shape (n,n)
         row scale (symmetric positive definite)
     Omega : ndarray of shape (m,m)
+        column scale (symmetric positive definite)
+    is_chol_Sigma : bool
+        if True, assumes that scale Sigma is replaced by its Cholesky factor
+    is_chol_Omega : bool
+        if True, assumes that scale Sigma is replaced by its Cholesky factor    
+    
     
     returns:
     X : ndarray of shape (n,m)
         pseudo-random number from the matrix normal distribution
     """
     
-    X = M + la.cholesky_nspd(Sigma) @ nrd.randn(M.shape[0], M.shape[1]) \
-        @ la.cholesky_nspd(Omega).T
+    if is_chol_Sigma:
+        chol_Sigma = Sigma
+    else:
+        chol_Sigma = la.cholesky_nspd(Sigma)
+    if is_chol_Omega:
+        chol_Omega = Omega
+    else:
+        chol_Omega = la.cholesky_nspd(Omega)
+    X = M + chol_Sigma @ nrd.randn(M.shape[0], M.shape[1]) @ chol_Omega.T            
     return X
 
    
@@ -192,10 +205,10 @@ def vector_chi2(nu):
     return x  
 
  
-def wishart(nu, S):
+def wishart(nu, S, is_cholesky = False):
     
     """
-    wishart(nu, S)
+    wishart(nu, S, is_cholesky = False)
     random number generator for the Wishart distribution
     based on algorithms d.27 and d.28
     
@@ -204,7 +217,9 @@ def wishart(nu, S):
         degrees of freedom (positive, nu >= n)
     S : ndarray of shape (n,n)
         scale (symmetric positive definite)
-    
+    is_cholesky : bool
+        if True, assumes that scale S is replaced by its Cholesky factor
+        
     returns:
     X : ndarray of shape (n,n)
         pseudo-random number from the Wishart distribution
@@ -224,16 +239,19 @@ def wishart(nu, S):
         index = np.tril_indices(dimension, -1)
         tril_size = int(0.5 * dimension * (dimension - 1))
         A[index] = nrd.randn(tril_size)
-    G = la.cholesky_nspd(S)
+    if is_cholesky:
+        G = S
+    else:
+        G = la.cholesky_nspd(S)   
     Z = G @ A
     X = Z @ Z.T
     return X    
 
     
-def inverse_wishart(nu, S):
+def inverse_wishart(nu, S, is_cholesky = False):
     
     """
-    inverse_wishart(nu, S)
+    inverse_wishart(nu, S, is_cholesky = False)
     random number generator for the inverse Wishart distribution
     based on algorithms d.30 and d.31
     
@@ -242,6 +260,8 @@ def inverse_wishart(nu, S):
         degrees of freedom (positive, nu >= n)
     S : ndarray of shape (n,n)
         scale (symmetric positive definite)
+    is_cholesky : bool
+        if True, assumes that scale S is replaced by its Cholesky factor
     
     returns:
     X : ndarray of shape (n,n)
@@ -249,7 +269,10 @@ def inverse_wishart(nu, S):
     """
 
     dimension = S.shape[0]
-    G = la.cholesky_nspd(S)    
+    if is_cholesky:
+        G = S
+    else:
+        G = la.cholesky_nspd(S)    
     if nu == np.floor(nu) and nu <= 80 + dimension:
         A = nrd.randn(dimension, nu)
         X = G @ nla.solve(A @ A.T, G.T)
@@ -545,7 +568,7 @@ def discrete_uniform(a, b):
         pseudo-random numbers from the discrete uniform distribution
     """
     
-    x = np.floor(a + (b + 1 - a) * nrd.rand())
+    x = int(np.floor(a + (b + 1 - a) * nrd.rand()))
     return x
 
    
@@ -569,7 +592,65 @@ def poisson(lamda):
     return x    
 
 
+def uniform_orthogonal(n):
 
+    """
+    uniform_orthogonal(n)
+    random number generator for the uniform orthogonal matrix distribution
+    based on paragraph following equation (4.14.33)
+    
+    parameters:
+    n : int
+        dimension of the matrix
+    
+    returns:
+    Q : ndarray of shape (n,n)
+        uniform orthogonal matrix
+    """    
+    
+    X = nrd.randn(n,n)
+    raw_Q, raw_R = nla.qr(X)
+    sign_swap = np.sign(np.diag(raw_R))
+    Q = raw_Q * sign_swap
+    return Q
     
     
+def zero_uniform_orthogonal(n, restriction_matrix, irf):
     
+    """
+    zero_uniform_orthogonal(n, restriction_matrix, irf)
+    random number generator for the uniform orthogonal matrix distribution with zero restrictions
+    based on algorithm (14.5)
+    
+    parameters:
+    n : int
+        dimension of the matrix
+    restriction_matrix : ndarray of shape (n_restrictions,3)
+        matrix of restriction indices for variable, shock and period
+    irf : ndarray of shape (n,n,restriction_periods)
+        matrix of preliminary structural IRFs
+                
+    returns:
+    Q : ndarray of shape (n,n)
+        uniform orthogonal matrix compliant with zero restrictions
+    """  
+
+    zero_restriction_shocks = np.unique(restriction_matrix[:,1])
+    Q_j1 = np.empty([0,n])
+    for j in range(n):
+        if j in zero_restriction_shocks:
+            shock_restrictions = restriction_matrix[restriction_matrix[:,1]==j]
+            Z_jf = irf[shock_restrictions[:,0],:,shock_restrictions[:,2]]
+        else:
+            Z_jf = np.empty([0,n])
+        R_j = np.vstack([Z_jf,Q_j1])
+        x_j = nrd.randn(n)
+        if len(R_j)== 0:
+            q_j = x_j / nla.norm(x_j)
+        else:
+            N_j = la.nullspace(R_j)
+            Nx_j = N_j.T @ x_j
+            q_j = N_j @ (Nx_j / nla.norm(Nx_j))
+        Q_j1 = np.vstack([Q_j1,q_j])
+    Q = Q_j1.T
+    return Q    

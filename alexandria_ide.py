@@ -163,6 +163,102 @@ if user_inputs['tab_1']['model'] == 1:
     
     # type of hyperparameter optimization (1: common variance, 2: coefficient-specific variances plus residual variance)
     user_inputs['tab_2_lr']['optimization_type'] = 1
+
+
+#---------------------------------------------------
+# Editable part: tab 2, vector autoregression
+#--------------------------------------------------- 
+
+
+# this applies only if the selected model is vector autoregression (model = 2)
+if user_inputs['tab_1']['model'] == 2:
+    
+    # choice of vector autoregression model (1: maximum likelihood; 
+    # 2: Minnesota; 3: normal-Wishart; 4: independent; 5: dummy observations;
+    # 6: large Bayesian VAR; 7: proxy-SVAR)
+    user_inputs['tab_2_var']['var_type'] = 1
+    
+    # post-burn iterations for MCMC algorithm (integer)
+    user_inputs['tab_2_var']['iterations'] = 2000
+    
+    # burnin iterations for MCMC algorithm (integer)
+    user_inputs['tab_2_var']['burnin'] = 1000
+    
+    # credibility level for model estimates (float between 0 and 1)
+    user_inputs['tab_2_var']['model_credibility'] = 0.95
+    
+    # include constant in vector autoregression (True: yes, False: no)
+    user_inputs['tab_2_var']['constant'] = True
+    
+    # include trend in vector autoregression (True: yes, False: no)
+    user_inputs['tab_2_var']['trend'] = False
+    
+    # include quadratic trend in regression (True: yes, False: no)
+    user_inputs['tab_2_var']['quadratic_trend'] = False  
+    
+    # endogenous lags to include in vector autoregression
+    user_inputs['tab_2_var']['lags'] = 4
+    
+    # prior autoregressive coefficients: either scalar for common value (e.g. 0.9),
+    # or list of values, one for each AR coefficient (e.g. [0.9, 0.8, 0.75])
+    user_inputs['tab_2_var']['ar_coefficients'] = 0.9
+    
+    # overall tightness coefficient pi1 (positive float)
+    user_inputs['tab_2_var']['pi1'] = 0.1
+    
+    # cross-variable shrinkage coefficient pi2 (positive float)
+    user_inputs['tab_2_var']['pi2'] = 0.5
+    
+    # lag decay coefficient pi3 (positive float)
+    user_inputs['tab_2_var']['pi3'] = 1
+    
+    # exogenous slackness coefficient pi4 (positive float)
+    user_inputs['tab_2_var']['pi4'] = 100
+    
+    # sums-of-coefficients tightness pi5 (positive float)
+    user_inputs['tab_2_var']['pi5'] = 1
+    
+    # initial observation tightness pi6 (positive float)
+    user_inputs['tab_2_var']['pi6'] = 0.1 
+    
+    # long-run tightness pi7 (positive float)
+    user_inputs['tab_2_var']['pi7'] = 0.1
+    
+    # proxy variables, as list of strings (e.g. ['var1', 'var2']; can be empty if model is not proxy-SVAR
+    user_inputs['tab_2_var']['proxys'] = ''
+    
+    # proxy-SVAR relevance parameter lambda
+    user_inputs['tab_2_var']['lamda'] = 0.2
+    
+    # proxy-SVAR prior type (1: uninformative; 2: Minnesota)
+    user_inputs['tab_2_var']['proxy_prior'] = 1
+    
+    # constrained coefficients (True: yes, False: no)
+    user_inputs['tab_2_var']['constrained_coefficients'] = False
+    
+    # sums-of-coefficients (True: yes, False: no)
+    user_inputs['tab_2_var']['sums_of_coefficients'] = False
+    
+    # dummy initial observation (True: yes, False: no)
+    user_inputs['tab_2_var']['initial_observation'] = False 
+    
+    # long-run prior (True: yes, False: no)
+    user_inputs['tab_2_var']['long_run'] = False  
+    
+    # stationary prior (True: yes, False: no)    
+    user_inputs['tab_2_var']['stationary'] = False
+    
+    # marginal likelihood (True: yes, False: no)
+    user_inputs['tab_2_var']['marginal_likelihood'] = False 
+    
+    # hyperparameter optimization (True: yes, False: no)
+    user_inputs['tab_2_var']['hyperparameter_optimization'] = False
+    
+    # name of constrained coefficients file, as string (e.g. 'constrained_coefficients.csv')
+    user_inputs['tab_2_var']['coefficients_file'] = ''
+    
+    # name of long-run prior file, as string (e.g. 'long_run.csv')
+    user_inputs['tab_2_var']['long_run_file'] = ''
     
     
 #---------------------------------------------------
@@ -234,6 +330,9 @@ if model == 1:
     from alexandria.linear_regression.main import linear_regression_main_code
     lr = linear_regression_main_code(user_inputs)
  
-
+# else, if model is vector autoregression, import main code for vector autoregression, run it, and return model
+elif model == 2:
+    from alexandria.vector_autoregression.main import vector_autoregression_main_code
+    var = vector_autoregression_main_code(user_inputs)
 
 

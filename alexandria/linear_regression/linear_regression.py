@@ -1,11 +1,8 @@
 # imports
-import numpy as np
-import numpy.linalg as nla
-
+import alexandria.linear_regression.regression_utilities as ru
 
 
 class LinearRegression(object):
-    
     
     
     #---------------------------------------------------
@@ -14,22 +11,24 @@ class LinearRegression(object):
     
     
     def __init__(self):
-        pass        
+        pass
     
-    
+
+    #---------------------------------------------------
+    # Methods (Access = private)
+    #---------------------------------------------------   
+
+
     def _make_regressors(self):
         
-        """generates regressors X and y defined in (3.9.2)"""
+        """ generates regressors X and y defined in (3.9.2) """
         
-        # unpack
-        endogenous = self.endogenous
-        exogenous = self.exogenous
         # define y
-        y = endogenous
+        y = self.endogenous
         # define X, adding constant and trends if included
-        X = self._add_intercept_and_trends(exogenous, True)
+        X = ru.add_intercept_and_trends(self.exogenous, self.constant, self.trend, self.quadratic_trend, 0)
         # get dimensions
-        n_exogenous = exogenous.shape[1]
+        n_exogenous = self.exogenous.shape[1]
         n = X.shape[0]
         k = X.shape[1]
         # define terms for posterior distribution
@@ -45,51 +44,12 @@ class LinearRegression(object):
         self._XX = XX
         self._Xy = Xy 
         self._yy = yy
-    
-    
-    def _add_intercept_and_trends(self, X, in_sample):
+
+
+    def _ols_regression(self):
         
-        """add constant, trend and quadratic trend to regressors if selected"""
+        """ maximum likelihood estimates for beta and sigma, from (3.9.7) """
         
-        # unpack
-        constant = self.constant
-        trend = self.trend
-        quadratic_trend = self.quadratic_trend
-        n_rows = X.shape[0]
-        # consider quadratic trend
-        if quadratic_trend:
-            # if in_sample, quadratic trend starts at 1
-            if in_sample:
-                quadratic_trend_column = np.arange(1,n_rows+1).reshape(-1,1) ** 2
-            # if out of sample, quadratic trend starts at (n+1) ** 2
-            else:
-                n = self.n
-                quadratic_trend_column = (n + np.arange(1,n_rows+1).reshape(-1,1)) ** 2
-            X = np.hstack((quadratic_trend_column, X))
-        # consider trend
-        if trend:
-            # if in_sample, trend starts at 1
-            if in_sample:
-                trend_column = np.arange(1,n_rows+1).reshape(-1,1)
-            # if out of sample, trend starts at n+1
-            else:
-                n = self.n
-                trend_column = n + np.arange(1,n_rows+1).reshape(-1,1)
-            X = np.hstack((trend_column, X))
-        # consider intercept
-        if constant:
-            constant_column = np.ones((n_rows,1))
-            X = np.hstack((constant_column, X))
-        return X    
-    
-    
-    def _ols_regression(self, y, X, XX, Xy, n):
-        
-        """maximum likelihood estimates for beta and sigma, from (3.9.7)"""
-        
-        beta_hat = nla.solve(XX, Xy)
-        res = y - X @ beta_hat
-        sigma_hat = res @ res / n
-        return beta_hat, sigma_hat   
-    
-    
+        beta_hat, sigma_hat  = ru.ols_regression(self.y, self.X, self._XX, self._Xy, self.n)
+        return beta_hat, sigma_hat 
+

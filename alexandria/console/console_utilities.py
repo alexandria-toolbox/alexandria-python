@@ -1,8 +1,10 @@
 # imports
 import numpy as np
-from os import system, name
+from os import system, name, mkdir
+from os.path import isdir, join
 from time import sleep
 from IPython import get_ipython
+import alexandria.processor.input_utilities as iu
 
     
 # module console_utilities
@@ -50,7 +52,7 @@ def progress_bar(iteration, total_iterations, application_tag):
     returns:
     none
     """
-    
+
     if iteration == 0:
         # print application tag (which application is being run)
         print(application_tag)
@@ -77,8 +79,6 @@ def progress_bar(iteration, total_iterations, application_tag):
         + '=' * (arrow_position - 1) + '>' * (arrow_position != 0) \
         + (33 - arrow_position) * '.' + ']  ' + string_percentage
         print('\r' + string, end = '')
-        # print(string, end='\r')
-        sleep(0.0007)
     
     
 def progress_bar_complete(application_tag):
@@ -139,6 +139,23 @@ def print_message(message):
     print(message)
 
 
+def print_message_to_overwrite(message):
+    
+    """
+    print_message_to_overwrite(message)
+    a print function that prints a message that will be overwritten by the next message
+    
+    parameters:     
+    message: str
+        the message to print
+        
+    returns:
+    none
+    """   
+    
+    print(message, end='\r')
+
+
 def print_string_list(string_list):
     
     """
@@ -171,13 +188,31 @@ def write_string_list(string_list, filepath):
     returns:
     none
     """      
-    
+
     string_list_with_breaks = [string + '\n' for string in string_list]
-    file = open(filepath,"a")
+    file = open(filepath,'w')
     file.writelines(string_list_with_breaks)
     file.close()
 
 
+def check_path(path):
+
+    """
+    check_path(path)
+    checks whether folder given by path exists, and create it if needed
+    
+    parameters:     
+    path: str
+        path to folder
+        
+    returns:
+    none
+    """ 
+
+    if not isdir(path):
+        mkdir(path)
+ 
+    
 def alexandria_header():
     
     """
@@ -202,11 +237,70 @@ def alexandria_header():
     header.append('     /_/ /_/ /_/  \___/  /_/\_\ \__,_/ /_/ /_/ \____/ /_/   /_/  \__,_/        ')
     header.append('                                                                               ')
     header.append('     The library of Bayesian time-series models                                ')
-    header.append('     V 0.1 - Copyright Ⓒ  Romain Legrand                                      ')       
+    header.append('     V 1.0 - Copyright Ⓒ  Romain Legrand                                      ')       
     header.append('   ========================================================================    ')
     header.append('                                                                               ')        
     header.append('                                                                               ')     
     return header
+
+
+def print_alexandria_header():
+    
+    """
+    print_alexandria_header()
+    display Alexandria header on console
+    
+    parameters:     
+    none
+        
+    returns:
+    none
+    """       
+    
+    # get Alexandria header
+    header = alexandria_header()
+    # print header
+    print_string_list(header)  
+
+
+
+def print_start_message():
+
+    """
+    print_start_message()
+    display start message
+    
+    parameters:     
+    none
+        
+    returns:
+    none
+    """    
+    
+    print_message('Starting estimation of your model...')
+    print_message(' ')
+
+
+
+def print_completion_message(progress_bar):
+
+    """
+    print_completion_message(progress_bar)
+    display completion message
+    
+    parameters:     
+    progress_bar: bool
+        if yes, progress bar is displayed
+        
+    returns:
+    none
+    """    
+    
+    if progress_bar:
+        print_message(' ')
+    print_message('Estimation completed successfully.')
+    print_message(' ')  
+    print_message(' ')
 
 
 def format_number(number):
@@ -224,8 +318,11 @@ def format_number(number):
         string containing the formatted number
     """    
     
+    # if number is exactly 0, format it normally
+    if number == 0:
+        formatted_number = '     0.000'
     # if number is of regular length, use decimal notation with 3 decimals
-    if 0.0001 < abs(number) < 100000:
+    elif 0.0001 <= abs(number) < 100000:
         formatted_number = '{:10.3f}'.format(number)
     else:
     # if value is too small or too large, switch to exponential notation
@@ -257,7 +354,7 @@ def shorten_string(string, n):
     
     """
     shorten_string(string, n)
-    allows for a maximum of n characters in string; if longer, string is shortened with ' ...'
+    allows for a maximum of n characters in string; if longer, string is shortened with '..'
     
     parameters:      
     string: str
@@ -269,7 +366,7 @@ def shorten_string(string, n):
     """       
     
     if len(string) > n:
-        string = string[:n-4] + ' ...'
+        string = string[:n-2] + '..'
     return string
 
 
@@ -332,50 +429,293 @@ def model_header(model):
     # add final equal dashed line
     header.append(equal_dashed_line())
     return header
+    
 
-
-def estimation_header(start, complete, n, endogenous, frequency, sample):
+def equation_header(string):
     
     """
-    estimation_header(endogenous, start, complete, sample, frequency, n)
-    return an estimation header with basic model information
+    equation_header(string)
+    return a header with string, and two wrapping dashed lines
     
-    parameters:  
-    start: datetime object
-        datetime corresponding to date where estimation starts
-    complete: datetime object
-        datetime corresponding to date where estimation is complete
-    n: int
-        number of sample observations
-    endogenous: str
-        explained variable
-    frequency: str
-        data frequency
-    sample: str
-        estimation sample, start and end dates
+    parameters:      
+    string: str
+        string containing the model name
         
     returns:
     header: str list
-        list of string containing the estimation header
+        list of string containing the model header
     """ 
     
-    # initiate header
+    # initiate header, add equal dashed line
     header = []
-    # first row: dependent variable and data frequency
-    left_element = '{:14}{:>24}'.format('Dep. variable:', shorten_string(endogenous, 20))
-    right_element = '{:7}{:>31}'.format('Sample:', sample)   
-    header.append(left_element + '    ' + right_element)
-    # second row: estimation start and sample
-    left_element = '{:11}{:>27}'.format('Est. start:', start.strftime('%Y-%m-%d %H:%M:%S'))  
-    right_element = '{:10}{:>28}'.format('Frequency:', frequency)
-    header.append(left_element + '    ' + right_element)       
-    # third row: estimation complete and observations
-    left_element = '{:14}{:>24}'.format('Est. complete:', complete.strftime('%Y-%m-%d %H:%M:%S'))      
-    right_element = '{:17}{:>21}'.format('No. observations:', str(n))
-    header.append(left_element + '    ' + right_element) 
+    header.append(equal_dashed_line())
+    # center-justify model name
+    header.append('{:^80}'.format(string))
+    # add final equal dashed line
+    header.append(hyphen_dashed_line())
     return header
+
+
+def intermediate_header(string):
+    
+    """
+    intermediate_header(string)
+    return an intermediate header with string, and two wrapping dashed lines
+    
+    parameters:      
+    string: str
+        string containing the model name
+        
+    returns:
+    header: str list
+        list of string containing the model header
+    """ 
+    
+    # initiate header, add equal dashed line
+    header = []
+    header.append(hyphen_dashed_line())
+    # center-justify model name
+    header.append('{:^80}'.format(string))
+    # add final equal dashed line
+    header.append(hyphen_dashed_line())
+    return header
+
+
+def make_regressors(endogenous, exogenous, constant, trend, quadratic_trend, n, p):
+
+    """
+    make_regressors(endogenous, exogenous, constant, trend, quadratic_trend, n, p)
+    return a list of strings of regressors
+    
+    parameters:      
+    endogenous: str list
+        list of endogenous variables
+    exogenous: str list
+        list of exogenous variables   
+    constant: bool
+        if true, a constant is added to the model
+    trend: bool
+        if true, a trend is added to the model
+    quadratic_trend: bool
+        if true, a quadratic trend is added to the model
+    n : int
+        number of endogenous variables
+    p : int
+        number of lags
+        
+    returns:
+    regressors: str list
+        list of string containing the model regressors
+    """
+
+    regressors = []
+    if constant:
+        regressors.append('constant')
+    if trend:
+        regressors.append('trend')
+    if quadratic_trend:
+        regressors.append('quadratic trend')         
+    if exogenous != ['none']:
+        regressors += exogenous
+    for i in range(n):
+        for j in range(p):
+            regressors.append(endogenous[i] + ' (-' + str(j+1) + ')')
+    return regressors
+
+
+def make_index(n, m, p, k):
+
+    """
+    make_index(n, m, p, k)
+    return an array of indices for VAR coefficients
+    
+    parameters:      
+    n : int
+        number of endogenous variables
+    m : int
+        number of exogenous variables            
+    p : int
+        number of lags
+    k : int
+        number of coefficients per VAR equation
+        
+    returns:
+    index: ndarray of size (k,)
+        array of indices
+    """
+
+    index = np.zeros(k)
+    i = -1
+    for j in range(m):
+        i = i + 1
+        index[i] = j
+    for g in range(n):
+        for h in range(p):
+            i = i + 1
+            index[i] = m + h * n + g
+    return index
+
+
+def variance_line(residual_variance, shock_variance):
+    
+    """
+    variance_line(residual_variance, shock_variance)
+    return a line with residual and shock variance estimate
+    
+    parameters:      
+    variable: str
+        string containing the model name
+        
+    returns:
+    residual_variance: float
+        residual variance estimate
+    residual_variance: float or empty str
+        shock variance estimate    
+    """     
+    
+    formatted_residual_variance = format_number(residual_variance)
+    left_element = '{:18}{:>20}'.format('residual variance:', formatted_residual_variance)
+    if iu.is_numeric(shock_variance):
+        formatted_shock_variance = format_number(shock_variance)
+        right_element = '{:15}{:>23}'.format('shock variance:', formatted_shock_variance)
+    else:
+        right_element = ' ' * 38
+    line = left_element + '    ' + right_element
+    return line
     
     
+def variance_covariance_summary(Sigma, n, endogenous_variables, tag):
+
+    """
+    variance_covariance_summary(Sigma, n, endogenous_variables)
+    return a set of lines that summarizes a variance-covariance matrix
+    
+    parameters:      
+    Sigma: ndarray of shape (n,n)
+        spd variance-covariance matrix
+    n : int
+        number of endogenous variables
+    endogenous_variables: str list
+        list of endogenous variables
+    tag: str
+        string providing the command to use to display full matrix
+        
+    returns:
+    lines: str list
+        string containing variance-covariance matrix summary
+    """     
+
+    lines = []
+    dimension = min(Sigma.shape[0], 6)
+    header_line = ' ' * 10
+    for i in range(dimension):
+        header_line += '{:>11}'.format(shorten_string(endogenous_variables[i], 10))
+    header_line = string_line(header_line)
+    lines.append(header_line)
+    for i in range(dimension):
+        current_line = '{:<10}'.format(shorten_string(endogenous_variables[i], 10))
+        for j in range(dimension):
+            current_line += ' ' + format_number(Sigma[i,j])
+        if n > 6:
+            current_line += ' ...'
+        current_line = string_line(current_line)
+        lines.append(current_line)
+    if n > 6:
+        current_line = '  ⋮               ⋮          ⋮          ⋮          ⋮          ⋮          ⋮   ⋱  '
+        lines.append(current_line)
+        lines.append(' ' * 80)
+        current_line = 'output is too long, use ' + tag + ' to obtain full view'
+        lines.append(string_line(current_line))
+    return lines
+     
+            
+def forecast_evaluation_line(variable, value_1, value_2, value_3, value_4, value_5):
+    
+    """
+    forecast_evaluation_line(variable, value_1, value_2, value_3, value_4, value_5)
+    return a line with variable name and formatted numerical values
+    
+    parameters:      
+    variable: str
+        variable name
+    value_1: float
+        first value to display on line
+    value_2: float
+        second value to display on line
+    value_3: float
+        third value to display on line
+    value_4: float
+        fourth value to display on line
+    value_5: float
+        fifth value to display on line
+        
+    returns:
+    line: str
+        string containing formatted forecast evaluation criteria summary
+    """           
+    
+    line = '{:<10}'.format(shorten_string(variable, 10))
+    line += ' ' + format_number(value_1)
+    line += ' ' + format_number(value_2)
+    line += ' ' + format_number(value_3)
+    line += ' ' + format_number(value_4)
+    line += ' ' + format_number(value_5)
+    line = string_line(line)
+    return line
+
+    
+def forecast_evaluation_summary(log_score, joint_log_score, endogenous_variables, tag):
+    
+    """
+    forecast_evaluation_summary(log_score, joint_log_score, endogenous_variables, tag)
+    return a set of lines that summarizes Bayesian forecast evaluation criteria
+    
+    parameters:      
+    log_score: ndarray of shape (forecast_periods,n)
+        array of log score values
+    joint_log_score: ndarray of shape (forecast_periods,)
+        array of joint log score values
+    endogenous_variables: str list
+        list of endogenous variables
+    tag: str
+        string providing the command to use to display full matrix
+        
+    returns:
+    line: str
+        list of strings containing formatted forecast evaluation criteria summary
+    """      
+    
+    lines = []
+    periods = log_score.shape[0]
+    dimension = min(periods, 6)
+    header_line = ' ' * 10
+    for i in range(dimension):
+        header_line += '{:>11}'.format('(+' + str(i+1) + ')')
+    if dimension == 6:
+        header_line += ' ...'
+    else:
+        header_line += '      (all)'
+    header_line = string_line(header_line)
+    lines.append(header_line)
+    for i in range(len(endogenous_variables)):
+        line = '{:<10}'.format(shorten_string(endogenous_variables[i], 10))
+        for j in range(dimension):
+            value = log_score[j,i]
+            line += ' ' + format_number(value)
+        if dimension == 6:
+            line += ' ...'
+        else:
+            value = joint_log_score[i]
+            line += ' ' + format_number(value)
+        line = string_line(line)
+        lines.append(line)
+    if dimension == 6:
+        lines.append(' ' * 80)
+        current_line = 'output is too long, use ' + tag + ' to obtain full view'
+        lines.append(string_line(current_line))   
+    return lines
+
+
 def coefficient_header(credibility_level):
 
     """
@@ -476,20 +816,20 @@ def insample_evaluation_lines(ssr, r2, adj_r2, m_y, aic, bic):
     lines: str list
         set of lines reporting in-sample evaluation criteria
     """ 
-    
+
     # initiate lines
     lines = []
-    # first row: ssr and marginal likelihood
-    left_element = '{:4}{:>34}'.format('ssr:', format_number(ssr))
+    # first row: r2 and ssr
+    left_element = '{:3}{:>35}'.format('R2:', format_number(r2))  
+    right_element = '{:4}{:>34}'.format('ssr:', format_number(ssr))
+    lines.append(left_element + '    ' + right_element)
+    # second row: adjusted r2 and marginal likelihood
+    left_element = '{:8}{:>30}'.format('adj. R2:', format_number(adj_r2))
     if m_y:
         right_element = '{:17}{:>21}'.format('log10 marg. lik.:', format_number(m_y))
     else:
-        right_element = ' ' * 38
+        right_element = ' ' * 38    
     lines.append(left_element + '    ' + right_element)
-    # second row: r2 and adjusted r2
-    left_element = '{:3}{:>35}'.format('R2:', format_number(r2))  
-    right_element = '{:8}{:>30}'.format('adj. R2:', format_number(adj_r2))
-    lines.append(left_element + '    ' + right_element)  
     # third row AIC and BIC
     if aic:
         left_element = '{:4}{:>34}'.format('AIC:', format_number(aic))  
@@ -547,63 +887,6 @@ def forecast_evaluation_lines(rmse, mae, mape, theil_u, bias, log_score, crps):
     return lines
 
 
-def tab_1_settings(model, endogenous, exogenous, frequency, sample, path, file, \
-                   progress_bar, create_graphics, save_results):
-
-    """
-    tab_1_settings(model, endogenous, exogenous, frequency, sample, path, file, \
-                   progress_bar, create_graphics, save_results)
-    returns the set of lines with the results for tab 1 settings
-    
-    parameters: 
-    model: str
-        selected model (e.g. 'linear regression')
-    endogenous: str
-        set of endogenous variables, separated by a comma
-    exogenous: str
-        set of exogenous variables, separated by a comma
-    frequency: str
-        sample data frequency
-    sample: str
-        sample dates, separated by a space
-    path: str
-        path to project folder
-    file: str
-        name of data file
-    progress_bar: bool
-        user's choice for progress bar
-    create graphics: bool
-        user's choice for graphics creation
-    save_results: bool
-        user's choice for saving results
-        
-    returns:
-    lines: str list
-        set of lines reporting settings for tab 1
-    """ 
-    
-    # initiate lines
-    lines = []
-    # header for tab 1
-    lines.append('Models')
-    lines.append('---------')
-    lines.append(' ')
-    # other elements for tab 1
-    lines.append('model selection: ' + model)
-    lines.append('endogenous variables: ' + endogenous) 
-    lines.append('exogenous variables: ' + exogenous)
-    lines.append('data frequency: ' + frequency)
-    lines.append('estimation sample: ' + sample)
-    lines.append('path to project folder: ' + path)
-    lines.append('data file: ' + file)
-    lines.append('progress bar: ' + bool_to_string(progress_bar))
-    lines.append('create graphics: ' + bool_to_string(create_graphics))    
-    lines.append('save_results: ' + bool_to_string(save_results))
-    lines.append(' ')
-    lines.append(' ')
-    return lines
-
-
 def bool_to_string(bool):
     
     """
@@ -624,110 +907,5 @@ def bool_to_string(bool):
     else:
         string = 'no'
     return string
-
-
-def tab_3_settings(forecasts, forecast_credibility, conditional_forecasts, \
-                   conditional_forecast_credibility, irf, irf_credibility, \
-                   fevd, fevd_credibility, hd, hd_credibility, forecast_periods, \
-                   conditional_forecast_type, forecast_file, forecast_evaluation, \
-                   irf_periods, structural_identification, structural_identification_file):
-
-    """
-    tab_3_settings(forecasts, forecast_credibility, conditional_forecasts, \
-                   conditional_forecast_credibility, irf, irf_credibility, \
-                   fevd, fevd_credibility, hd, hd_credibility, forecast_periods, \
-                   conditional_forecast_type, forecast_file, forecast_evaluation, \
-                   irf_periods, structural_identification, structural_identification_file)
-    returns the set of lines with the results for tab 3 settings 
-
-    parameters:  
-    forecasts: bool
-        user's choice for forecasts
-    forecast_credibility: float
-        credibility level for forecasts
-    conditional_forecasts: bool
-        user's choice for conditional forecasts
-    conditional_forecast_credibility: float
-        credibility level for conditional forecasts
-    irf: bool
-        user's choice for impulse response functions
-    irf_credibility: float
-        credibility level for impulse response functions
-    fevd: bool
-        user's choice for forecast error variance decomposition
-    fevd_credibility: float
-        credibility level for forecast error variance decomposition  
-    hd: bool
-        user's choice for historical decomposition
-    hd_credibility: float
-        credibility level for historical decomposition  
-    forecast_periods: int
-        number of forecast periods
-    conditional_forecast_type: str
-        type of conditional forecasts
-    forecast_file: str
-        name of file containing the information for conditional forecasts
-    forecast_evaluation: bool
-        user's choice for forecast evaluation
-    irf_periods: int
-        number of impulse repsonse function periods        
-    structural_identification: str
-        type of structural identification        
-    structural_identification_file: str
-        name of file containing the information for structural identification     
-        
-    returns:
-    lines: str list
-        set of lines reporting settings for tab 3     
-    """ 
-    
-    # initiate lines
-    lines = []
-    # header for tab 1
-    lines.append('Applications')
-    lines.append('---------')
-    lines.append(' ')
-    # other elements for tab 3
-    lines.append('forecasts: ' + forecasts)
-    lines.append('credibility level, forecasts: ' + forecast_credibility)    
-    lines.append('conditional forecasts: ' + conditional_forecasts) 
-    lines.append('credibility level, conditional forecasts: ' + conditional_forecast_credibility)     
-    lines.append('impulse response functions: ' + irf)
-    lines.append('credibility level, impulse response functions: ' + irf_credibility)     
-    lines.append('forecast error variance decomposition: ' + fevd)
-    lines.append('credibility level,forecast error variance decomposition: ' + fevd_credibility)    
-    lines.append('historical decomposition: ' + hd)
-    lines.append('credibility level,historical decomposition: ' + hd_credibility)
-    lines.append('forecast periods: ' + forecast_periods)    
-    lines.append('conditional forecast type: ' + conditional_forecast_type)        
-    lines.append('forecast file: ' + forecast_file)    
-    lines.append('forecast evaluation: ' + forecast_evaluation)  
-    lines.append('impulse response function periods: ' + irf_periods)    
-    lines.append('structural identification: ' + structural_identification)  
-    lines.append('structural identification file: ' + structural_identification_file)
-    lines.append(' ')
-    lines.append(' ')
-    return lines 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

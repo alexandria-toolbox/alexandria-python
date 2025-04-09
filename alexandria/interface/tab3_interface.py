@@ -98,14 +98,12 @@ class Tab3Interface(object):
                                   QRadioButton::indicator {width: 15px; height: 15px}')  
         self.t3_rdb3.toggled.connect(self.cb_t3_bgr2)
         self.t3_rdb3.setHidden(True)  
-        self.t3_rdb3.setEnabled(False)
         self.t3_rdb4 = QRadioButton(' no', self)   
         self.t3_rdb4.setGeometry(600, 135, 80, 25) 
         self.t3_rdb4.setStyleSheet('font-size: 12pt; font-family: Serif; \
                                   QRadioButton::indicator {width: 15px; height: 15px}')  
         self.t3_rdb4.toggled.connect(self.cb_t3_bgr2) 
         self.t3_rdb4.setHidden(True)
-        self.t3_rdb4.setEnabled(False)
         if self.user_inputs['tab_3']['conditional_forecast']:
             self.t3_rdb3.setChecked(True) 
         else:
@@ -116,7 +114,7 @@ class Tab3Interface(object):
         
         # conditional forecast credibility edit
         self.t3_edt2 = QLineEdit(self)
-        self.t3_edt2.move(690, 135)       
+        self.t3_edt2.move(690, 135)
         self.t3_edt2.resize(70, 25)                                           
         self.t3_edt2.setAlignment(Qt.AlignCenter)     
         self.t3_edt2.setStyleSheet('background-color: rgb(255, 255, 255); \
@@ -124,7 +122,6 @@ class Tab3Interface(object):
         self.t3_edt2.setText(self.user_inputs['tab_3']['conditional_forecast_credibility'])
         self.t3_edt2.textChanged.connect(self.cb_t3_edt2)
         self.t3_edt2.setHidden(True)
-        self.t3_edt2.setEnabled(False)
         
         # irf activation label
         self.t3_txt4 = QLabel(self)
@@ -143,14 +140,12 @@ class Tab3Interface(object):
                                   QRadioButton::indicator {width: 15px; height: 15px}')  
         self.t3_rdb5.toggled.connect(self.cb_t3_bgr3)
         self.t3_rdb5.setHidden(True)     
-        self.t3_rdb5.setEnabled(False)
         self.t3_rdb6 = QRadioButton(' no', self)   
         self.t3_rdb6.setGeometry(600, 170, 80, 25) 
         self.t3_rdb6.setStyleSheet('font-size: 12pt; font-family: Serif; \
                                   QRadioButton::indicator {width: 15px; height: 15px}')  
         self.t3_rdb6.toggled.connect(self.cb_t3_bgr3) 
         self.t3_rdb6.setHidden(True)
-        self.t3_rdb6.setEnabled(False)
         if self.user_inputs['tab_3']['irf']:
             self.t3_rdb5.setChecked(True) 
         else:
@@ -169,7 +164,6 @@ class Tab3Interface(object):
         self.t3_edt3.setText(self.user_inputs['tab_3']['irf_credibility'])
         self.t3_edt3.textChanged.connect(self.cb_t3_edt3)
         self.t3_edt3.setHidden(True)
-        self.t3_edt3.setEnabled(False)
         
         # fevd activation label
         self.t3_txt5 = QLabel(self)
@@ -188,14 +182,12 @@ class Tab3Interface(object):
                                   QRadioButton::indicator {width: 15px; height: 15px}')  
         self.t3_rdb7.toggled.connect(self.cb_t3_bgr4)
         self.t3_rdb7.setHidden(True)   
-        self.t3_rdb7.setEnabled(False)
         self.t3_rdb8 = QRadioButton(' no', self)   
         self.t3_rdb8.setGeometry(600, 205, 80, 25) 
         self.t3_rdb8.setStyleSheet('font-size: 12pt; font-family: Serif; \
                                   QRadioButton::indicator {width: 15px; height: 15px}')  
         self.t3_rdb8.toggled.connect(self.cb_t3_bgr4) 
         self.t3_rdb8.setHidden(True)
-        self.t3_rdb8.setEnabled(False)
         if self.user_inputs['tab_3']['fevd']:
             self.t3_rdb7.setChecked(True) 
         else:
@@ -214,7 +206,6 @@ class Tab3Interface(object):
         self.t3_edt4.setText(self.user_inputs['tab_3']['fevd_credibility'])
         self.t3_edt4.textChanged.connect(self.cb_t3_edt4)
         self.t3_edt4.setHidden(True)
-        self.t3_edt4.setEnabled(False)
         
         # historical decomposition activation label
         self.t3_txt6 = QLabel(self)
@@ -233,14 +224,12 @@ class Tab3Interface(object):
                                   QRadioButton::indicator {width: 15px; height: 15px}')  
         self.t3_rdb9.toggled.connect(self.cb_t3_bgr5)
         self.t3_rdb9.setHidden(True)   
-        self.t3_rdb9.setEnabled(False)
         self.t3_rdb10 = QRadioButton(' no', self)   
         self.t3_rdb10.setGeometry(600, 240, 80, 25) 
         self.t3_rdb10.setStyleSheet('font-size: 12pt; font-family: Serif; \
                                   QRadioButton::indicator {width: 15px; height: 15px}')  
         self.t3_rdb10.toggled.connect(self.cb_t3_bgr5) 
         self.t3_rdb10.setHidden(True)
-        self.t3_rdb10.setEnabled(False)
         if self.user_inputs['tab_3']['hd']:
             self.t3_rdb9.setChecked(True) 
         else:
@@ -259,223 +248,213 @@ class Tab3Interface(object):
         self.t3_edt5.setText(self.user_inputs['tab_3']['hd_credibility'])
         self.t3_edt5.textChanged.connect(self.cb_t3_edt5)
         self.t3_edt5.setHidden(True)
-        self.t3_edt5.setEnabled(False)
         
-        # application settings label
+        # forecasts label
         self.t3_txt7 = QLabel(self)
         self.t3_txt7.move(30, 300)
         self.t3_txt7.setFixedSize(300, 30)
-        self.t3_txt7.setText(' Application settings') 
+        self.t3_txt7.setText(' Forecasts') 
         self.t3_txt7.setAlignment(Qt.AlignLeft)
         self.t3_txt7.setStyleSheet('font-size: 16pt; font-family: Serif; \
                 font-weight: bold; background-color: rgb' + str(self.background_color))
         font = QFont(); font.setItalic(True); self.t3_txt7.setFont(font)
         self.t3_txt7.setHidden(True)
         
-        # frame around options
+        # frame around forecast settings
         self.t3_frm2 = QFrame(self)   
-        self.t3_frm2.setGeometry(20, 330, 780, 300)  
+        self.t3_frm2.setGeometry(20, 330, 380, 300)  
         self.t3_frm2.setFrameShape(QFrame.Panel)
         self.t3_frm2.setLineWidth(1)  
         self.t3_frm2.setStyleSheet('border: 1px solid rgb(150, 150, 150)')
         self.t3_frm2.setHidden(True)
         
-        # periods option label
+        # forecast periods label
         self.t3_txt8 = QLabel(self)
         self.t3_txt8.move(30, 345)
-        self.t3_txt8.setFixedSize(300, 30)
-        self.t3_txt8.setText(' Periods') 
+        self.t3_txt8.setFixedSize(200, 30)
+        self.t3_txt8.setText(' forecast periods') 
         self.t3_txt8.setAlignment(Qt.AlignLeft)
-        self.t3_txt8.setStyleSheet('font-size: 14pt; font-family: Serif; \
+        self.t3_txt8.setStyleSheet('font-size: 12pt; font-family: Serif; \
                 background-color: rgb' + str(self.background_color))
-        font = QFont(); font.setItalic(True); self.t3_txt8.setFont(font)
         self.t3_txt8.setHidden(True)
-        
-        # forecast periods label
-        self.t3_txt9 = QLabel(self)
-        self.t3_txt9.move(30, 385)
-        self.t3_txt9.setFixedSize(200, 30)
-        self.t3_txt9.setText(' forecast periods') 
-        self.t3_txt9.setAlignment(Qt.AlignLeft)
-        self.t3_txt9.setStyleSheet('font-size: 12pt; font-family: Serif; \
-                background-color: rgb' + str(self.background_color))
-        self.t3_txt9.setHidden(True)
         
         # forecast periods edit
         self.t3_edt6 = QLineEdit(self)
-        self.t3_edt6.move(300, 380)       
+        self.t3_edt6.move(290, 340)
         self.t3_edt6.resize(70, 25)                                           
         self.t3_edt6.setAlignment(Qt.AlignCenter)     
         self.t3_edt6.setStyleSheet('background-color: rgb(255, 255, 255); \
                                     border: 0.5px solid rgb(130, 130, 130)')
         self.t3_edt6.setText(self.user_inputs['tab_3']['forecast_periods'])
         self.t3_edt6.textChanged.connect(self.cb_t3_edt6)
-        self.t3_edt6.setHidden(True)
-        self.t3_edt6.setEnabled(False)
+        self.t3_edt6.setHidden(True)        
         
-        # irf periods label
+        # conditional forecast type label
+        self.t3_txt9 = QLabel(self)
+        self.t3_txt9.move(30, 385)
+        self.t3_txt9.setFixedSize(250, 30)
+        self.t3_txt9.setText(' conditional forecast type') 
+        self.t3_txt9.setAlignment(Qt.AlignLeft)
+        self.t3_txt9.setStyleSheet('font-size: 12pt; font-family: Serif; \
+                background-color: rgb' + str(self.background_color))
+        self.t3_txt9.setHidden(True)
+
+        # conditional forecast type menu
+        self.t3_mnu1 = QComboBox(self)
+        self.t3_mnu1.move(35, 415)                                        
+        self.t3_mnu1.resize(200, 25)
+        self.t3_mnu1.setStyleSheet('QListView{background-color: white}')
+        self.t3_mnu1.addItem('1. agnostic', 1)
+        self.t3_mnu1.addItem('2. structural shocks', 2)        
+        self.t3_mnu1.setCurrentIndex(self.user_inputs['tab_3']['conditional_forecast_type'] - 1)
+        self.t3_mnu1.activated.connect(self.cb_t3_mnu1)
+        self.t3_mnu1.setHidden(True)        
+        
+        # forecast input file label
         self.t3_txt10 = QLabel(self)
-        self.t3_txt10.move(30, 420)
-        self.t3_txt10.setFixedSize(200, 30)
-        self.t3_txt10.setText(' IRF periods')
+        self.t3_txt10.move(30, 460)
+        self.t3_txt10.setFixedSize(250, 30)
+        self.t3_txt10.setText(' forecast input file') 
         self.t3_txt10.setAlignment(Qt.AlignLeft)
         self.t3_txt10.setStyleSheet('font-size: 12pt; font-family: Serif; \
                 background-color: rgb' + str(self.background_color))
         self.t3_txt10.setHidden(True)
         
-        # irf periods edit
+        # forecast file edit
         self.t3_edt7 = QLineEdit(self)
-        self.t3_edt7.move(300, 415)       
-        self.t3_edt7.resize(70, 25)                                           
-        self.t3_edt7.setAlignment(Qt.AlignCenter)     
+        self.t3_edt7.move(35, 485)       
+        self.t3_edt7.resize(325, 25)                                           
+        self.t3_edt7.setAlignment(Qt.AlignLeft)     
         self.t3_edt7.setStyleSheet('background-color: rgb(255, 255, 255); \
                                     border: 0.5px solid rgb(130, 130, 130)')
-        self.t3_edt7.setText(self.user_inputs['tab_3']['irf_periods'])
+        self.t3_edt7.setText(self.user_inputs['tab_3']['forecast_file'])
         self.t3_edt7.textChanged.connect(self.cb_t3_edt7)
-        self.t3_edt7.setHidden(True)    
-        self.t3_edt7.setEnabled(False)
+        self.t3_edt7.setHidden(True)   
         
-        # identification scheme label
+        # conditional forecast input file label
         self.t3_txt11 = QLabel(self)
-        self.t3_txt11.move(30, 465)
-        self.t3_txt11.setFixedSize(300, 30)
-        self.t3_txt11.setText(' Identification scheme') 
+        self.t3_txt11.move(30, 530)
+        self.t3_txt11.setFixedSize(250, 30)
+        self.t3_txt11.setText(' conditional forecast input file') 
         self.t3_txt11.setAlignment(Qt.AlignLeft)
-        self.t3_txt11.setStyleSheet('font-size: 14pt; font-family: Serif; \
+        self.t3_txt11.setStyleSheet('font-size: 12pt; font-family: Serif; \
                 background-color: rgb' + str(self.background_color))
-        font = QFont(); font.setItalic(True); self.t3_txt11.setFont(font)
-        self.t3_txt11.setHidden(True)        
+        self.t3_txt11.setHidden(True)
+        
+        # conditional forecast file edit
+        self.t3_edt8 = QLineEdit(self)
+        self.t3_edt8.move(35, 555)       
+        self.t3_edt8.resize(325, 25)                                           
+        self.t3_edt8.setAlignment(Qt.AlignLeft)     
+        self.t3_edt8.setStyleSheet('background-color: rgb(255, 255, 255); \
+                                    border: 0.5px solid rgb(130, 130, 130)')
+        self.t3_edt8.setText(self.user_inputs['tab_3']['conditional_forecast_file'])
+        self.t3_edt8.textChanged.connect(self.cb_t3_edt8)
+        self.t3_edt8.setHidden(True) 
 
-        # conditional forecast type label
+        # forecast evaluation label
         self.t3_txt12 = QLabel(self)
-        self.t3_txt12.move(30, 505)
-        self.t3_txt12.setFixedSize(250, 30)
-        self.t3_txt12.setText(' conditional forecast type') 
+        self.t3_txt12.move(30, 600)
+        self.t3_txt12.setFixedSize(200, 25)
+        self.t3_txt12.setText(' forecast evaluation') 
         self.t3_txt12.setAlignment(Qt.AlignLeft)
         self.t3_txt12.setStyleSheet('font-size: 12pt; font-family: Serif; \
                 background-color: rgb' + str(self.background_color))
         self.t3_txt12.setHidden(True)
-
-        # conditional forecast type menu
-        self.t3_mnu1 = QComboBox(self)
-        self.t3_mnu1.move(35, 530)                                             
-        self.t3_mnu1.resize(200, 25)
-        self.t3_mnu1.setStyleSheet('QListView{background-color: white}')
-        self.t3_mnu1.addItem('1. general', 1)
-        self.t3_mnu1.addItem('2. all shocks', 2)        
-        self.t3_mnu1.addItem('3. shock-specific', 3)
-        self.t3_mnu1.setCurrentIndex(self.user_inputs['tab_3']['conditional_forecast_type'] - 1)
-        self.t3_mnu1.activated.connect(self.cb_t3_mnu1)
-        self.t3_mnu1.setHidden(True)
-        self.t3_mnu1.setEnabled(False)
-        
-        # structural identification label
-        self.t3_txt13 = QLabel(self)
-        self.t3_txt13.move(30, 565)
-        self.t3_txt13.setFixedSize(250, 30)
-        self.t3_txt13.setText(' structural identification')
-        self.t3_txt13.setAlignment(Qt.AlignLeft)
-        self.t3_txt13.setStyleSheet('font-size: 12pt; font-family: Serif; \
-                background-color: rgb' + str(self.background_color))
-        self.t3_txt13.setHidden(True)
-        
-        # structural identification menu
-        self.t3_mnu2 = QComboBox(self)
-        self.t3_mnu2.move(35, 590)                                             
-        self.t3_mnu2.resize(200, 25)
-        self.t3_mnu2.setStyleSheet('QListView{background-color: white}')
-        self.t3_mnu2.addItem('1. none', 1)
-        self.t3_mnu2.addItem('2. Cholesky', 2)
-        self.t3_mnu2.addItem('3. triangular', 3)        
-        self.t3_mnu2.setCurrentIndex(self.user_inputs['tab_3']['structural_identification'] - 1)
-        self.t3_mnu2.activated.connect(self.cb_t3_mnu2)
-        self.t3_mnu2.setHidden(True)   
-        self.t3_mnu2.setEnabled(False)
-        
-        # options label
-        self.t3_txt14 = QLabel(self)
-        self.t3_txt14.move(430, 345)
-        self.t3_txt14.setFixedSize(300, 30)
-        self.t3_txt14.setText(' Options') 
-        self.t3_txt14.setAlignment(Qt.AlignLeft)
-        self.t3_txt14.setStyleSheet('font-size: 14pt; font-family: Serif; \
-                background-color: rgb' + str(self.background_color))
-        font = QFont(); font.setItalic(True); self.t3_txt14.setFont(font)
-        self.t3_txt14.setHidden(True)        
-        
-        # forecast evaluation label
-        self.t3_txt15 = QLabel(self)
-        self.t3_txt15.move(430, 385)
-        self.t3_txt15.setFixedSize(200, 30)
-        self.t3_txt15.setText(' forecast evaluation') 
-        self.t3_txt15.setAlignment(Qt.AlignLeft)
-        self.t3_txt15.setStyleSheet('font-size: 12pt; font-family: Serif; \
-                background-color: rgb' + str(self.background_color))
-        self.t3_txt15.setHidden(True)
         
         # forecast evaluation checkbox
         self.t3_cbx1 = QCheckBox(self)
-        self.t3_cbx1.setGeometry(745, 385, 20, 20) 
+        self.t3_cbx1.setGeometry(345, 600, 20, 20) 
         self.t3_cbx1.setStyleSheet("QCheckBox::indicator:unchecked \
         {background-color : rgb(255, 255, 255); border: 0.5px solid rgb(0, 0, 0)}; \
         QCheckBox::indicator {width: 5px; height: 12px}") 
         self.t3_cbx1.setChecked(self.user_inputs['tab_3']['forecast_evaluation'])
         self.t3_cbx1.stateChanged.connect(self.cb_t3_cbx1) 
-        self.t3_cbx1.setHidden(True)        
+        self.t3_cbx1.setHidden(True)
         
-        # input files label
-        self.t3_txt16 = QLabel(self)
-        self.t3_txt16.move(430, 465)
-        self.t3_txt16.setFixedSize(300, 30)
-        self.t3_txt16.setText(' Input files') 
-        self.t3_txt16.setAlignment(Qt.AlignLeft)
-        self.t3_txt16.setStyleSheet('font-size: 14pt; font-family: Serif; \
+        # IRF label
+        self.t3_txt13 = QLabel(self)
+        self.t3_txt13.move(430, 300)
+        self.t3_txt13.setFixedSize(350, 30)
+        self.t3_txt13.setText(' Impulse response function') 
+        self.t3_txt13.setAlignment(Qt.AlignLeft)
+        self.t3_txt13.setStyleSheet('font-size: 16pt; font-family: Serif; \
+                font-weight: bold; background-color: rgb' + str(self.background_color))
+        font = QFont(); font.setItalic(True); self.t3_txt13.setFont(font)
+        self.t3_txt13.setHidden(True)
+        
+        # frame around IRF settings
+        self.t3_frm3 = QFrame(self)   
+        self.t3_frm3.setGeometry(420, 330, 380, 300)  
+        self.t3_frm3.setFrameShape(QFrame.Panel)
+        self.t3_frm3.setLineWidth(1)  
+        self.t3_frm3.setStyleSheet('border: 1px solid rgb(150, 150, 150)')
+        self.t3_frm3.setHidden(True)
+        
+        # irf periods label
+        self.t3_txt14 = QLabel(self)
+        self.t3_txt14.move(430, 345)
+        self.t3_txt14.setFixedSize(200, 30)
+        self.t3_txt14.setText(' IRF periods')
+        self.t3_txt14.setAlignment(Qt.AlignLeft)
+        self.t3_txt14.setStyleSheet('font-size: 12pt; font-family: Serif; \
                 background-color: rgb' + str(self.background_color))
-        font = QFont(); font.setItalic(True); self.t3_txt16.setFont(font)
-        self.t3_txt16.setHidden(True)          
+        self.t3_txt14.setHidden(True)
         
-        # forecast input file label
-        self.t3_txt17 = QLabel(self)
-        self.t3_txt17.move(430, 505)
-        self.t3_txt17.setFixedSize(250, 30)
-        self.t3_txt17.setText(' forecast input file') 
-        self.t3_txt17.setAlignment(Qt.AlignLeft)
-        self.t3_txt17.setStyleSheet('font-size: 12pt; font-family: Serif; \
-                background-color: rgb' + str(self.background_color))
-        self.t3_txt17.setHidden(True)
-        
-        # forecast file edit
-        self.t3_edt8 = QLineEdit(self)
-        self.t3_edt8.move(435, 530)       
-        self.t3_edt8.resize(325, 25)                                           
-        self.t3_edt8.setAlignment(Qt.AlignLeft)     
-        self.t3_edt8.setStyleSheet('background-color: rgb(255, 255, 255); \
-                                    border: 0.5px solid rgb(130, 130, 130)')
-        self.t3_edt8.setText(self.user_inputs['tab_3']['forecast_file'])
-        self.t3_edt8.textChanged.connect(self.cb_t3_edt8)
-        self.t3_edt8.setHidden(True)
-        
-        # structural identification file label
-        self.t3_txt18 = QLabel(self)
-        self.t3_txt18.move(430, 565)
-        self.t3_txt18.setFixedSize(300, 30)
-        self.t3_txt18.setText(' structural identification file')
-        self.t3_txt18.setAlignment(Qt.AlignLeft)
-        self.t3_txt18.setStyleSheet('font-size: 12pt; font-family: Serif; \
-                background-color: rgb' + str(self.background_color))
-        self.t3_txt18.setHidden(True)
-        
-        # structural identification file edit
+        # irf periods edit
         self.t3_edt9 = QLineEdit(self)
-        self.t3_edt9.move(435, 590)       
-        self.t3_edt9.resize(325, 25)                                           
-        self.t3_edt9.setAlignment(Qt.AlignLeft)     
+        self.t3_edt9.move(690, 340)   
+        self.t3_edt9.resize(70, 25)                                           
+        self.t3_edt9.setAlignment(Qt.AlignCenter)     
         self.t3_edt9.setStyleSheet('background-color: rgb(255, 255, 255); \
                                     border: 0.5px solid rgb(130, 130, 130)')
-        self.t3_edt9.setText(self.user_inputs['tab_3']['structural_identification_file'])
+        self.t3_edt9.setText(self.user_inputs['tab_3']['irf_periods'])
         self.t3_edt9.textChanged.connect(self.cb_t3_edt9)
-        self.t3_edt9.setHidden(True)
-        self.t3_edt9.setEnabled(False)
+        self.t3_edt9.setHidden(True)    
+
+        # structural identification label
+        self.t3_txt15 = QLabel(self)
+        self.t3_txt15.move(430, 385)
+        self.t3_txt15.setFixedSize(250, 30)
+        self.t3_txt15.setText(' structural identification')
+        self.t3_txt15.setAlignment(Qt.AlignLeft)
+        self.t3_txt15.setStyleSheet('font-size: 12pt; font-family: Serif; \
+                background-color: rgb' + str(self.background_color))
+        self.t3_txt15.setHidden(True)
+        
+        # structural identification menu
+        self.t3_mnu2 = QComboBox(self)
+        self.t3_mnu2.move(435, 415)                                             
+        self.t3_mnu2.resize(200, 25)
+        self.t3_mnu2.setStyleSheet('QListView{background-color: white}')
+        self.t3_mnu2.addItem('1. none', 1)
+        self.t3_mnu2.addItem('2. Cholesky', 2)
+        self.t3_mnu2.addItem('3. triangular', 3)   
+        self.t3_mnu2.addItem('4. restrictions', 4)   
+        self.t3_mnu2.setCurrentIndex(self.user_inputs['tab_3']['structural_identification'] - 1)
+        self.t3_mnu2.activated.connect(self.cb_t3_mnu2)
+        self.t3_mnu2.setHidden(True)   
+        
+        # structural identification file label
+        self.t3_txt16 = QLabel(self)
+        self.t3_txt16.move(430, 460)
+        self.t3_txt16.setFixedSize(300, 30)
+        self.t3_txt16.setText(' structural identification file')
+        self.t3_txt16.setAlignment(Qt.AlignLeft)
+        self.t3_txt16.setStyleSheet('font-size: 12pt; font-family: Serif; \
+                background-color: rgb' + str(self.background_color))
+        self.t3_txt16.setHidden(True)
+        
+        # structural identification file edit
+        self.t3_edt10 = QLineEdit(self)
+        self.t3_edt10.move(435, 485)       
+        self.t3_edt10.resize(325, 25)                                           
+        self.t3_edt10.setAlignment(Qt.AlignLeft)     
+        self.t3_edt10.setStyleSheet('background-color: rgb(255, 255, 255); \
+                                    border: 0.5px solid rgb(130, 130, 130)')
+        self.t3_edt10.setText(self.user_inputs['tab_3']['structural_identification_file'])
+        self.t3_edt10.textChanged.connect(self.cb_t3_edt10)
+        self.t3_edt10.setHidden(True)
         
         # run pushbutton
         self.t3_pbt1 = QPushButton(self)
@@ -507,10 +486,9 @@ class Tab3Interface(object):
         self.t3_txt14.setHidden(True)
         self.t3_txt15.setHidden(True)
         self.t3_txt16.setHidden(True)
-        self.t3_txt17.setHidden(True)
-        self.t3_txt18.setHidden(True)
         self.t3_frm1.setHidden(True)
         self.t3_frm2.setHidden(True)
+        self.t3_frm3.setHidden(True)
         self.t3_rdb1.setHidden(True)
         self.t3_rdb2.setHidden(True)
         self.t3_rdb3.setHidden(True)
@@ -530,6 +508,7 @@ class Tab3Interface(object):
         self.t3_edt7.setHidden(True)
         self.t3_edt8.setHidden(True)
         self.t3_edt9.setHidden(True)
+        self.t3_edt10.setHidden(True)
         self.t3_pbt1.setHidden(True)
         self.t3_cbx1.setHidden(True)
         self.t3_mnu1.setHidden(True)
@@ -558,10 +537,9 @@ class Tab3Interface(object):
         self.t3_txt14.setVisible(True)
         self.t3_txt15.setVisible(True)
         self.t3_txt16.setVisible(True)
-        self.t3_txt17.setVisible(True)
-        self.t3_txt18.setVisible(True)
         self.t3_frm1.setVisible(True)
         self.t3_frm2.setVisible(True)
+        self.t3_frm3.setVisible(True)
         self.t3_rdb1.setVisible(True)
         self.t3_rdb2.setVisible(True)
         self.t3_rdb3.setVisible(True)
@@ -581,6 +559,7 @@ class Tab3Interface(object):
         self.t3_edt7.setVisible(True)
         self.t3_edt8.setVisible(True)
         self.t3_edt9.setVisible(True)
+        self.t3_edt10.setVisible(True)
         self.t3_pbt1.setVisible(True)
         self.t3_cbx1.setVisible(True)
         self.t3_mnu1.setVisible(True)
@@ -648,31 +627,36 @@ class Tab3Interface(object):
     
     def cb_t3_mnu1(self, index):        
         self.user_inputs['tab_3']['conditional_forecast_type'] = self.t3_mnu1.itemData(index) 
-    
- 
+
+
     def cb_t3_edt7(self):
-        self.user_inputs['tab_3']['irf_periods'] = self.t3_edt7.text()     
-
-
+        self.user_inputs['tab_3']['forecast_file'] = self.t3_edt7.text()     
+ 
+    
+    def cb_t3_edt8(self):
+        self.user_inputs['tab_3']['conditional_forecast_file'] = self.t3_edt8.text() 
+         
+    
     def cb_t3_cbx1(self, state):     
         if (state == Qt.Checked):
             self.user_inputs['tab_3']['forecast_evaluation'] = True 
         else:
             self.user_inputs['tab_3']['forecast_evaluation'] = False              
+             
             
-
-    def cb_t3_edt8(self):
-        self.user_inputs['tab_3']['forecast_file'] = self.t3_edt8.text()  
+    def cb_t3_edt9(self):
+        self.user_inputs['tab_3']['irf_periods'] = self.t3_edt9.text()     
 
 
     def cb_t3_mnu2(self, index):        
         self.user_inputs['tab_3']['structural_identification'] = self.t3_mnu2.itemData(index) 
     
 
-    def cb_t3_edt9(self):
-        self.user_inputs['tab_3']['structural_identification_file'] = self.t3_edt9.text()  
+    def cb_t3_edt10(self):
+        self.user_inputs['tab_3']['structural_identification_file'] = self.t3_edt10.text()  
 
 
     def cb_t3_pbt1(self):
         self.validate_interface()
 
+        

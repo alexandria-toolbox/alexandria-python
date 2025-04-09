@@ -45,7 +45,7 @@ class Tab1Interface(object):
         self.t1_txt3 = QLabel(self)
         self.t1_txt3.move(15, 130)
         self.t1_txt3.setFixedSize(600, 30)
-        self.t1_txt3.setText(' V 0.1 - Python edition') 
+        self.t1_txt3.setText(' V 1.0 - Python edition') 
         self.t1_txt3.setAlignment(Qt.AlignLeft)
         self.t1_txt3.setStyleSheet('font-size: 16pt; font-family: Serif; \
                 font-weight: bold; background-color: rgb' + str(self.background_color))
@@ -90,6 +90,7 @@ class Tab1Interface(object):
         self.t1_mnu1.resize(250,25)
         self.t1_mnu1.setStyleSheet('QListView{background-color: white}')
         self.t1_mnu1.addItem('1. linear regression', 1)
+        self.t1_mnu1.addItem('2. vector autoregression', 2)
         self.t1_mnu1.setCurrentIndex(self.user_inputs['tab_1']['model'] - 1)
         self.t1_mnu1.activated.connect(self.cb_t1_mnu1)
         
@@ -145,6 +146,7 @@ class Tab1Interface(object):
         self.t1_mnu2.move(35,520)                                             
         self.t1_mnu2.resize(250,25)
         self.t1_mnu2.setStyleSheet('QListView{background-color: white}')
+        # self.t1_mnu2.addItem('1. cross-sectional/undated', 1)
         self.t1_mnu2.addItem('1. cross-sectional/undated', 1)
         self.t1_mnu2.addItem('2. annual', 2)
         self.t1_mnu2.addItem('3. quarterly', 3)
@@ -459,7 +461,9 @@ class Tab1Interface(object):
         if isfile(join(self.interface_path, "user_inputs.json")):
             remove(join(self.interface_path, "user_inputs.json"));
         self.create_default_inputs()
+        self.create_tab_2_lr()
         self.reset_default_inputs()
+        self.created_tab_2_var = False
         
         
     def cb_t1_pbt2(self):

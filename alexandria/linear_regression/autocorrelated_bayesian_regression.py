@@ -6,13 +6,15 @@ from scipy.stats import chi2
 import alexandria.math.linear_algebra as la
 import alexandria.math.math_utilities as mu
 import alexandria.math.stat_utilities as su
+import alexandria.processor.input_utilities as iu
 import alexandria.console.console_utilities as cu
 import alexandria.math.random_number_generators as rng
+import alexandria.linear_regression.regression_utilities as ru
 from alexandria.linear_regression.linear_regression import LinearRegression
+from alexandria.linear_regression.bayesian_regression import BayesianRegression
 
 
-
-class AutocorrelatedBayesianRegression(LinearRegression):
+class AutocorrelatedBayesianRegression(LinearRegression, BayesianRegression):
     
     
     """
@@ -185,15 +187,15 @@ class AutocorrelatedBayesianRegression(LinearRegression):
     mcmc_phi : ndarray of shape (q,iterations)
         storage of mcmc values for phi
    
-    estimates_beta : ndarray of shape (k,4)
+    beta_estimates : ndarray of shape (k,4)
         posterior estimates for beta
-        column 1: interval lower bound; column 2: median; 
+        column 1: point estimate; column 2: interval lower bound; 
         column 3: interval upper bound; column 4: standard deviation
    
-    estimates_sigma : float
+    sigma_estimates : float
         posterior estimate for sigma
    
-    estimates_phi : ndarray of shape (q,3)
+    phi_estimates : ndarray of shape (q,3)
         posterior estimates for phi
         column 1: interval lower bound; column 2: median; 
         column 3: interval upper bound
@@ -207,17 +209,17 @@ class AutocorrelatedBayesianRegression(LinearRegression):
     mcmc_forecasts : ndarray of shape (m,iterations)
         storage of mcmc values for forecasts
    
-    estimates_forecasts : ndarray of shape (m,3)
-        posterior estimates for predictions   
-        column 1: interval lower bound; column 2: median; 
+    forecast_estimates : ndarray of shape (m,3)
+        estimates for predictions   
+        column 1: interval lower bound; column 2: point estimate; 
         column 3: interval upper bound
     
-    estimates_fit : ndarray of shape (n,)
+    fitted_estimates : ndarray of shape (n,)
         posterior estimates (median) for in sample-fit
-   
-    estimates_residuals : ndarray of shape (n,)
+       
+    residual_estimates : ndarray of shape (n,)
         posterior estimates (median) for residuals
-                    
+        
     insample_evaluation : dict
         in-sample fit evaluation (SSR, R2, adj-R2)
                                         
@@ -278,6 +280,7 @@ class AutocorrelatedBayesianRegression(LinearRegression):
         self.verbose = verbose
         # make regressors
         self._make_regressors()
+        self.__make_autocorrelated_regressors()
 
 
     def estimate(self):
@@ -294,7 +297,9 @@ class AutocorrelatedBayesianRegression(LinearRegression):
         """
         
         # define prior values
-        self.__prior()
+        self._prior()
+        # define autocorrelated prior values
+        self.__autocorrelated_prior()
         # define posterior values
         self.__posterior()
         # run MCMC algorithm for regression parameters
@@ -316,7 +321,7 @@ class AutocorrelatedBayesianRegression(LinearRegression):
             credibility level for predictions (between 0 and 1)
 
         returns:
-        estimates_forecasts : ndarray of shape (m,3)
+        forecast_estimates : ndarray of shape (m,3)
             posterior estimates for predictions
             column 1: interval lower bound; column 2: median; 
             column 3: interval upper bound
@@ -325,52 +330,14 @@ class AutocorrelatedBayesianRegression(LinearRegression):
         # run mcmc algorithm for predictive density
         mcmc_forecasts, m = self.__forecast_mcmc(X_hat)
         # obtain posterior estimates
-        estimates_forecasts = self.__forecast_estimates(mcmc_forecasts, credibility_level)
+        forecast_estimates = self.__make_forecast_estimates(mcmc_forecasts, credibility_level)
         # save as attributes
         self.m = m
         self.mcmc_forecasts = mcmc_forecasts
-        self.estimates_forecasts = estimates_forecasts
-        return estimates_forecasts
+        self.forecast_estimates = forecast_estimates
+        return forecast_estimates
 
-
-    def fit_and_residuals(self):
-        
-        """
-        fit_and_residuals()
-        estimates of in-sample fit and regression residuals
-        
-        parameters:
-        none
-        
-        returns:
-        none
-        """
-        
-        # unpack
-        y = self.y        
-        X = self.X
-        beta = self.estimates_beta[:,1]
-        k = self.k
-        T = self.T      
-        # estimate fits and residuals
-        estimates_fit = X @ beta
-        estimates_residuals = y - X @ beta
-        # estimate in-sample prediction criteria from equation (3.10.8)
-        res = estimates_residuals
-        ssr = res @ res
-        tss = (y - np.mean(y)) @ (y - np.mean(y))
-        r2 = 1 - ssr / tss
-        adj_r2 = 1 - (1 - r2) * (T - 1) / (T - k)
-        insample_evaluation = {}
-        insample_evaluation['ssr'] = ssr
-        insample_evaluation['r2'] = r2
-        insample_evaluation['adj_r2'] = adj_r2   
-        # save as attributes
-        self.estimates_fit = estimates_fit
-        self.estimates_residuals = estimates_residuals
-        self.insample_evaluation = insample_evaluation
-        
-        
+    
     def forecast_evaluation(self, y):
         
         """
@@ -387,48 +354,18 @@ class AutocorrelatedBayesianRegression(LinearRegression):
         
         # unpack
         mcmc_forecasts = self.mcmc_forecasts
-        estimates_forecasts = self.estimates_forecasts
+        forecast_estimates = self.forecast_estimates
         m = self.m
         iterations = self.iterations
-        # calculate forecast error
-        y_hat = estimates_forecasts[:,1]
-        err = y - y_hat
-        # compute forecast evaluation from equation (3.10.11)
-        rmse = np.sqrt(err @ err / m)
-        mae = np.sum(np.abs(err)) / m
-        mape = 100 * np.sum(np.abs(err / y)) / m
-        theil_u = np.sqrt(err @ err) / (np.sqrt(y @ y) + np.sqrt(y_hat @ y_hat))
-        bias = np.sum(err) / np.sum(np.abs(err))        
-        # loop over the m predictions
-        log_score = np.zeros(m)
-        crps = np.zeros(m)        
-        for i in range(m):
-            # get actual, prediction mean, prediction variance    
-            y_i = y[i]
-            forecasts = mcmc_forecasts[i,:]
-            mu_i = np.mean(forecasts)
-            sigma_i = np.var(forecasts)
-            # get log score from equation (3.10.14)
-            log_pdf, _ = su.normal_pdf(y_i, mu_i, sigma_i)
-            log_score[i] = - log_pdf
-            # get CRPS from equation (3.10.17)
-            term_1 = np.sum(np.abs(forecasts - y_i))
-            term_2 = 0
-            for j in range(iterations):
-                term_2 += np.sum(np.abs(forecasts[j] - forecasts))
-            crps[i] = term_1 / iterations - term_2 / (2 * iterations**2)
-        log_score = np.mean(log_score)
-        crps = np.mean(crps)
-        forecast_evaluation_criteria = {}
-        forecast_evaluation_criteria['rmse'] = rmse
-        forecast_evaluation_criteria['mae'] = mae
-        forecast_evaluation_criteria['mape'] = mape
-        forecast_evaluation_criteria['theil_u'] = theil_u
-        forecast_evaluation_criteria['bias'] = bias
-        forecast_evaluation_criteria['log_score'] = log_score
-        forecast_evaluation_criteria['crps'] = crps
+        # obtain regular forecast evaluation criteria
+        y_hat = forecast_estimates[:,0]
+        standard_evaluation_criteria = ru.forecast_evaluation_criteria(y_hat, y)  
+        # obtain Bayesian forecast evaluation criteria
+        bayesian_evaluation_criteria = self.__bayesian_forecast_evaluation_criteria(y, mcmc_forecasts, iterations, m)   
+        # merge dictionaries
+        forecast_evaluation_criteria = iu.concatenate_dictionaries(standard_evaluation_criteria, bayesian_evaluation_criteria)        
         # save as attributes
-        self.forecast_evaluation_criteria = forecast_evaluation_criteria
+        self.forecast_evaluation_criteria = forecast_evaluation_criteria            
         
         
     def marginal_likelihood(self):
@@ -451,7 +388,7 @@ class AutocorrelatedBayesianRegression(LinearRegression):
         k = self.k
         q = self.q
         b = self.b
-        inv_V = self.__inv_V
+        inv_V = self._inv_V
         V = self.V
         p = self.p
         H = self.H
@@ -516,12 +453,10 @@ class AutocorrelatedBayesianRegression(LinearRegression):
     #---------------------------------------------------
 
 
-    def _make_regressors(self):
+    def __make_autocorrelated_regressors(self):
         
         """generates T defined in (3.9.52)"""
-
-        # run superclass function
-        LinearRegression._make_regressors(self)        
+      
         # unpack
         n = self.n
         q = self.q
@@ -529,87 +464,16 @@ class AutocorrelatedBayesianRegression(LinearRegression):
         T = n - q
         # save as attributes
         self.T = T
-        
 
-    def __prior(self):
+
+    def __autocorrelated_prior(self):
         
-        """creates prior elements b, V, p and Z defined in (3.9.10) and (3.9.62)"""
+        """ creates prior elements p and Z defined in (3.9.62) """
         
-        # generate b
-        self.__generate_b()
-        # generate V
-        self.__generate_V()
         # generate p
         self.__generate_p()
         # generate H
         self.__generate_H()
-
-
-    def __generate_b(self):
-        
-        """creates prior element b"""
-        
-        # unpack
-        constant = self.constant
-        trend = self.trend
-        quadratic_trend = self.quadratic_trend
-        b_exogenous = self.b_exogenous
-        b_constant = self.b_constant
-        b_trend = self.b_trend
-        b_quadratic_trend = self.b_quadratic_trend
-        n_exogenous = self._n_exogenous
-        # if b_exogenous is a scalar, turn it into a vector replicating the value
-        if isinstance(b_exogenous, (int,float)):
-            b_exogenous = b_exogenous * np.ones(n_exogenous)
-        b = b_exogenous
-        # if quadratic trend is included, add to prior mean
-        if quadratic_trend:
-            b = np.hstack((b_quadratic_trend, b))
-        # if trend is included, add to prior mean
-        if trend:
-            b = np.hstack((b_trend, b))
-        # if constant is included, add to prior mean
-        if constant:
-            b = np.hstack((b_constant, b))
-        # save as attribute
-        self.b = b 
-
-
-    def __generate_V(self):
-        
-        """creates prior element V"""
-        
-        # unpack
-        b = self.b        
-        constant = self.constant
-        trend = self.trend
-        quadratic_trend = self.quadratic_trend
-        V_exogenous = self.V_exogenous
-        V_constant = self.V_constant
-        V_trend = self.V_trend
-        V_quadratic_trend = self.V_quadratic_trend
-        n_exogenous = self._n_exogenous
-        # if V_exogenous is a scalar, turn it into a vector replicating the value
-        if isinstance(V_exogenous, (int,float)):
-            V_exogenous = V_exogenous * np.ones(n_exogenous)
-        V = V_exogenous
-        # if quadratic trend is included, add to prior mean
-        if quadratic_trend:
-            V = np.hstack((V_quadratic_trend, V))
-        # if trend is included, add to prior mean
-        if trend:
-            V = np.hstack((V_trend, V))
-        # if constant is included, add to prior mean
-        if constant:
-            V = np.hstack((V_constant, V))        
-        # convert the vector V into an array
-        inv_V_b = b / V
-        inv_V = np.diag(1/V)
-        V = np.diag(V)
-        # save as attributes
-        self.V = V
-        self.__inv_V = inv_V
-        self.__inv_V_b = inv_V_b 
 
 
     def __generate_p(self):
@@ -672,8 +536,8 @@ class AutocorrelatedBayesianRegression(LinearRegression):
         X = self.X
         k = self.k
         q = self.q
-        inv_V = self.__inv_V
-        inv_V_b = self.__inv_V_b
+        inv_V = self._inv_V
+        inv_V_b = self._inv_V_b
         alpha_bar = self.alpha_bar
         delta = self.delta
         inv_H = self.__inv_H
@@ -775,24 +639,24 @@ class AutocorrelatedBayesianRegression(LinearRegression):
         k = self.k
         q = self.q
         # initiate storage: 4 columns: lower bound, median, upper bound, standard deviation
-        estimates_beta = np.zeros((k,4))
+        beta_estimates = np.zeros((k,4))
         # fill estimates
-        estimates_beta[:,0] = np.quantile(mcmc_beta, (1-credibility_level)/2, 1)
-        estimates_beta[:,1] = np.quantile(mcmc_beta, 0.5, 1)
-        estimates_beta[:,2] = np.quantile(mcmc_beta, (1+credibility_level)/2, 1)
-        estimates_beta[:,3] = np.std(mcmc_beta, 1)
+        beta_estimates[:,0] = np.quantile(mcmc_beta, 0.5, 1)
+        beta_estimates[:,1] = np.quantile(mcmc_beta, (1-credibility_level)/2, 1)
+        beta_estimates[:,2] = np.quantile(mcmc_beta, (1+credibility_level)/2, 1)
+        beta_estimates[:,3] = np.std(mcmc_beta, 1)
         # get median for sigma
-        estimates_sigma = np.quantile(mcmc_sigma, 0.5)
+        sigma_estimates = np.quantile(mcmc_sigma, 0.5)
         # get estimates for phi
-        estimates_phi = np.zeros((q,4))
-        estimates_phi[:,0] = np.quantile(mcmc_phi, (1-credibility_level)/2, 1)
-        estimates_phi[:,1] = np.quantile(mcmc_phi, 0.5, 1)
-        estimates_phi[:,2] = np.quantile(mcmc_phi, (1+credibility_level)/2, 1)
-        estimates_phi[:,3] = np.std(mcmc_phi, 1)
+        phi_estimates = np.zeros((q,4))
+        phi_estimates[:,0] = np.quantile(mcmc_phi, 0.5, 1)
+        phi_estimates[:,1] = np.quantile(mcmc_phi, (1-credibility_level)/2, 1)
+        phi_estimates[:,2] = np.quantile(mcmc_phi, (1+credibility_level)/2, 1)
+        phi_estimates[:,3] = np.std(mcmc_phi, 1)
         # save as attributes
-        self.estimates_beta = estimates_beta
-        self.estimates_sigma = estimates_sigma
-        self.estimates_phi = estimates_phi
+        self.beta_estimates = beta_estimates
+        self.sigma_estimates = sigma_estimates
+        self.phi_estimates = phi_estimates
 
 
     def __forecast_mcmc(self, X_hat):
@@ -808,9 +672,13 @@ class AutocorrelatedBayesianRegression(LinearRegression):
         mcmc_phi = self.mcmc_phi
         iterations = self.iterations
         verbose = self.verbose
+        n = self.n
+        constant = self.constant
+        trend = self.trend
+        quadratic_trend = self.quadratic_trend
         # add constant if necessary
         m = X_hat.shape[0]
-        X_hat = self._add_intercept_and_trends(X_hat, False)
+        X_hat = ru.add_intercept_and_trends(X_hat, constant, trend, quadratic_trend, n)
         # initiate storage, loop over simulations and simulate predictions
         mcmc_forecasts = np.zeros((m, iterations))        
         for i in range(iterations):
@@ -839,17 +707,45 @@ class AutocorrelatedBayesianRegression(LinearRegression):
         return mcmc_forecasts, m
 
 
-    def __forecast_estimates(self, mcmc_forecasts, credibility_level):
+    def __make_forecast_estimates(self, mcmc_forecasts, credibility_level):
         
         """point estimates and credibility intervals for predictions""" 
         
         m = mcmc_forecasts.shape[0]
         # initiate estimate storage; 3 columns: lower bound, median, upper bound
-        estimates_forecasts = np.zeros((m,3))
+        forecast_estimates = np.zeros((m,3))
         # fill estimates
-        estimates_forecasts[:,0] = np.quantile(mcmc_forecasts, (1-credibility_level)/2, 1)
-        estimates_forecasts[:,1] = np.quantile(mcmc_forecasts, 0.5, 1)
-        estimates_forecasts[:,2] = np.quantile(mcmc_forecasts, (1+credibility_level)/2, 1)
-        return estimates_forecasts
+        forecast_estimates[:,0] = np.quantile(mcmc_forecasts, 0.5, 1)
+        forecast_estimates[:,1] = np.quantile(mcmc_forecasts, (1-credibility_level)/2, 1)
+        forecast_estimates[:,2] = np.quantile(mcmc_forecasts, (1+credibility_level)/2, 1)
+        return forecast_estimates
 
+
+    def __bayesian_forecast_evaluation_criteria(self, y, mcmc_forecasts, iterations, m):
+        
+        """ Bayesian forecast evaluation criteria from equations from equations (3.10.13) and (3.10.17) """   
+
+        log_score = np.zeros(m)
+        crps = np.zeros(m)
+        for i in range(m):
+            # get actual, prediction mean, prediction variance    
+            y_i = y[i]
+            forecasts = mcmc_forecasts[i,:]
+            mu_i = np.mean(forecasts)
+            sigma_i = np.var(forecasts)
+            # get log score from equation (3.10.14)
+            log_pdf, _ = su.normal_pdf(y_i, mu_i, sigma_i)
+            log_score[i] = - log_pdf
+            # get CRPS from equation (3.10.17)
+            term_1 = np.sum(np.abs(forecasts - y_i))
+            term_2 = 0
+            for j in range(iterations):
+                term_2 += np.sum(np.abs(forecasts[j] - forecasts))
+            crps[i] = term_1 / iterations - term_2 / (2 * iterations**2)
+        log_score = np.mean(log_score)
+        crps = np.mean(crps)
+        bayesian_forecast_evaluation_criteria = {}
+        bayesian_forecast_evaluation_criteria['log_score'] = log_score
+        bayesian_forecast_evaluation_criteria['crps'] = crps
+        return bayesian_forecast_evaluation_criteria
 

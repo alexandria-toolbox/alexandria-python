@@ -46,3 +46,7 @@ if model == 1:
     from alexandria.linear_regression.main import linear_regression_main_code
     lr = linear_regression_main_code(user_inputs)
     
+# else, if model is vector autoregression, import main code for vector autoregression, run it, and return model
+elif model == 2:
+    from alexandria.vector_autoregression.main import vector_autoregression_main_code
+    var = vector_autoregression_main_code(user_inputs)

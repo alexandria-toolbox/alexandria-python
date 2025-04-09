@@ -1,5 +1,6 @@
 # imports
 import numpy as np
+import numpy.linalg as nla
 import numpy.random as nrd
 import scipy.linalg as sla
 import scipy.stats as sst
@@ -19,7 +20,7 @@ import alexandria.math.linear_algebra as la
 def normal_pdf(x, mu, sigma):
     
     """
-    normal_pdf(x)
+    normal_pdf(x, mu, sigma)
     log-pdf and pdf for the normal distribution
     
     parameters:
@@ -159,6 +160,42 @@ def student_icdf(p, v):
     
     val = sst.t.ppf(p, v)
     return val
+
+
+def multivariate_normal_pdf(x, mu, Sigma):
+    
+    """
+    multivariate_normal_pdf(x, mu, Sigma)
+    log-pdf and pdf for the multivariate normal distribution
+    
+    parameters:
+    x : ndarray of dimension (n,)
+        x value at which the pdf must be calculated
+    mu : ndarray of dimension (n,)
+        n-dimensional mean vector
+    Sigma : ndarray of dimension (n,n)
+        variance-covariance matrix for the distribution
+
+    returns:
+    log_val : float
+        log-density of normal distribution at x
+    val : float
+        density of normal distribution at x
+    """
+
+    n = x.shape[0]
+    term_1 = - 0.5 * n * np.log(2 * np.pi)
+    term_2 = - 0.5 * la.determinant_spd_matrix(Sigma)
+    term_3 = - 0.5 * (x - mu) @ la.invert_spd_matrix(Sigma) @ (x - mu)
+    log_val = term_1 + term_2 + term_3
+    val = np.exp(log_val)
+    return log_val, val
+
+
+
+
+
+
 
 
 

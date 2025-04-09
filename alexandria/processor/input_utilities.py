@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 import re
 import os.path as osp
+from datetime import datetime
+import alexandria.console.console_utilities as cu
 
 
 # module input_utilities
@@ -27,7 +29,6 @@ def fix_string(string):
     returns:
     fixed_string : str
         string with spaces made regular
-        
     """
     # convert tabs into spaces
     string = string.replace('\t', ' ')
@@ -49,7 +50,6 @@ def string_to_list(string):
     returns:
     string_list: list of str
          list obtained after splitting original string
-        
     """
     
     # if string is actually already a list of strings, ignore and return
@@ -76,7 +76,6 @@ def list_to_string(string_list):
     returns:
     string: str
          string obtained by bursting string list
-        
     """
     
     # if list is actually a scalar, just convert to string
@@ -89,6 +88,92 @@ def list_to_string(string_list):
     else:
         string = ", ".join(string_list)
     return string
+
+
+def is_numeric(x):
+    
+    """
+    is_numeric(x)
+    checks whether input is of numeric type
+    
+    parameters:
+    x: input, possibly of numeric type
+        element to check for numeric type
+        
+    returns:
+    numeric: bool
+        True if element is numeric, False otherwise
+    """
+    
+    type_list = [int, np.intc , np.int16, np.int32, np.int64, float, np.float_, np.float32, np.float64, \
+                 complex, np.complex_, np.complex64, np.complex128]
+    if type(x) in type_list and not np.isnan(x) and not np.isinf(x):
+        numeric = True
+    else:
+        numeric = False
+    return numeric
+
+
+def is_integer(x):
+    
+    """
+    is_integer(x)
+    checks whether input is of integer type (possibly of type float but effectively integer)
+    
+    parameters:
+    x: input, possibly of integer type
+        element to check for integer type
+        
+    returns:
+    integer: bool
+        True if element is integer, False otherwise
+    """
+    
+    type_list = [int, np.intc , np.int16, np.int32, np.int64]
+    if (type(x) in type_list) or (is_numeric(x) and int(x) == x):
+        integer = True
+    else:
+        integer = False
+    return integer
+
+
+def concatenate_dictionaries(dictionary_1, dictionary_2):
+    
+    """
+    concatenate_dictionaries(dictionary_1, dictionary_2)
+    concatenate two dictionaries that have different keys
+    
+    parameters: 
+    dictionary_1 : dict
+        first dictionary in concatenation
+    dictionary_2 : dict
+        second dictionary in concatenation
+        
+    returns:
+    dictionary : dict
+        concatenated dictionary
+    """
+    
+    dictionary = {**dictionary_1, **dictionary_2}
+    return dictionary
+
+
+def get_timer():
+
+    """
+    get_timer()
+    simple timer
+    
+    parameters:
+    None
+
+    returns:
+    estimation_time : timestamp
+        time at the moment the function runs
+    """  
+    
+    estimation_time = datetime.now()
+    return estimation_time
 
 
 def check_file_path(path, file):
@@ -156,7 +241,7 @@ def load_data(path, file):
 def check_variables(data, file, variables, tag):
     
     """
-    check_variables1(data, file, variables, tag)
+    check_variables(data, file, variables, tag)
     checks whether specified variables exist in dataframe
     
     parameters:
@@ -238,8 +323,11 @@ def fetch_data(data, file, start_date, end_date, variables, tag):
     # if variable list is not empty, recover sample for given variables and dates
     if variables:
         sample = data.loc[start_date:end_date, variables]
+        # test for non-numerical values (strings), and if any, raise error
+        if 'O' in sample.dtypes.tolist():
+            raise TypeError('Data error for file ' + file + '. ' + tag + ' contains text entries, which are unhandled.')
         # test for NaNs, and if any, raise error
-        if sample.isnull().values.any():
+        elif sample.isnull().values.any():
             raise TypeError('Data error for file ' + file + '. ' + tag + ' contains NaN entries, which are unhandled.')
         # else, data is valid: convert to numpy array
         else:
@@ -478,12 +566,14 @@ def fetch_forecast_data(data, insample_data, variables, file, required, periods,
         if True, checks that variables are provided in file
     periods : int, default = None
         number of forecast periods
+    tag : str
+        tag indicating the varables to be checked
 
     returns:
     sample_p : ndarray
         ndarray containing forecast data   
     """
-
+    
     # find any missing variable
     missing_variables = [variable for variable in variables if variable not in data]
     # if some variables are missing
@@ -499,18 +589,23 @@ def fetch_forecast_data(data, insample_data, variables, file, required, periods,
             sample_p = []
     # if no variable is missing, recover prediction data
     else:
-        sample_p = data[variables]
-        # if too few periods of data are provided, raise error
-        if sample_p.shape[0] < periods:
-            raise TypeError('Data error for file ' + file + '. Forecasts must be conducted for ' + str(periods) + ' periods, but ' + tag + ' is provided for fewer periods.')
-        # else, reduce data to number of periods
+        # if variables is empty, return empty list
+        if len(variables) == 0:
+            sample_p = []
+        # if there are some variables to fetch, get them
         else:
-            sample_p = sample_p.iloc[:periods]
-        # test for NaNs, and if any, raise error
-        if sample_p.isnull().values.any():
-            raise TypeError('Data error for file ' + file + '. ' + tag + ' contains NaN entries, which are unhandled.')
-        # convert to numpy array
-        sample_p = sample_p.copy().values
+            sample_p = data[variables]
+            # if too few periods of data are provided, raise error
+            if sample_p.shape[0] < periods:
+                raise TypeError('Data error for file ' + file + '. Forecasts must be conducted for ' + str(periods) + ' periods, but ' + tag + ' is provided for fewer periods.')
+            # else, reduce data to number of periods
+            else:
+                sample_p = sample_p.iloc[:periods]
+            # test for NaNs, and if any, raise error
+            if sample_p.isnull().values.any():
+                raise TypeError('Data error for file ' + file + '. ' + tag + ' contains NaN entries, which are unhandled.')
+            # convert to numpy array
+            sample_p = sample_p.copy().values
     return sample_p
 
 
@@ -552,5 +647,497 @@ def generate_forecast_dates(end_date, periods, frequency):
     elif frequency == 6:
         forecast_dates = pd.date_range(start = end_date, periods = periods+1, freq = 'B')[1:]       
     return forecast_dates
+
+
+def check_coefficients_table(data, endogenous_variables, exogenous_variables, \
+                             lags, constant, trend, quadratic_trend, file):
+    
+    """
+    check_coefficients_table(data, endogenous_variables, exogenous_variables, \
+                             lags, constant, trend, quadratic_trend, file)
+    checks whether constrained coefficient table is of valid format
+    
+    parameters:
+    data : pandas dataframe
+        dataframe containing constrained coefficient information
+    endogenous_variables : list of strings
+        list containing the names of endogenous variables
+    exogenous_variables : list of strings
+        list containing the names of exogenous variables
+    lags : int
+        number of lags for the VAR model
+    constant : bool
+        set to True if a constant is included in the model
+    trend : bool
+        set to True if a linear trend is included in the model        
+    quadratic_trend : bool
+        set to True if a quadratic trend is included in the model
+    file : str
+        name of data file (with extension csv, xls or xlsx)
+
+    returns:
+    none
+    """
+    
+    data = data.reset_index()
+    columns = data.columns.to_list()
+    if columns != ['variable', 'responding_to', 'lag', 'mean', 'variance']:
+        raise TypeError('Data error for file '  + file + '. Column names don\'t match the required pattern.')
+    types = data.dtypes
+    if types['lag'] != 'int64':
+        raise TypeError('Data error for file '  + file + '. Some entries in column ' \
+        + '\'lag\' are not integers.')        
+    if types['mean'] not in ['int64','float64']:
+        raise TypeError('Data error for file '  + file + '. Some entries in column ' \
+        + '\'mean\' are not numeric.')    
+    if types['variance'] not in ['int64','float64']:
+        raise TypeError('Data error for file '  + file + '. Some entries in column ' \
+        + '\'variance\' are not numeric.') 
+    automated_variables = ['constant', 'trend', 'quadratic_trend']
+    variables = endogenous_variables + exogenous_variables + automated_variables
+    all_exogenous_variables = exogenous_variables + automated_variables
+    all_lags = [lag for lag in np.arange(-1,lags+1).tolist()]
+    for i in range(data.shape[0]):
+        variable_value = data.iloc[i].loc['variable']
+        responding_value = data.iloc[i].loc['responding_to']
+        lag_value = data.iloc[i].loc['lag']
+        mean_value = data.iloc[i].loc['mean']
+        var_value = data.iloc[i].loc['variance']
+        if variable_value not in endogenous_variables:
+            raise TypeError('Data error for file '  + file + '. Entry for column ' \
+            + '\'variable\', row ' + str(i+1) + ', does not correspond to an endogenous variable.')
+        if responding_value not in variables:
+            raise TypeError('Data error for file '  + file + '. Entry for column \'responding_to\', row '
+            + str(i+1) + ', does not correspond to any of the model variables.')
+        if responding_value == 'constant' and not constant:
+            raise TypeError('Data error for file '  + file + '. Entry for column \'responding_to\', row '
+            + str(i+1) + ', is \'constant\', but constant is not activated.') 
+        if responding_value == 'trend' and not trend:
+            raise TypeError('Data error for file '  + file + '. Entry for column \'responding_to\', row '
+            + str(i+1) + ', is \'trend\', but trend is not activated.')  
+        if responding_value == 'quadratic_trend' and not quadratic_trend:
+            raise TypeError('Data error for file '  + file + '. Entry for column \'responding_to\', row '
+            + str(i+1) + ', is \'quadratic_trend\', but quadratic trend is not activated.') 
+        if not is_numeric(lag_value):
+            raise TypeError('Data error for file '  + file + '. Entry for column \'lag\', row '
+            + str(i+1) + ' is not numeric.')
+        if responding_value not in all_exogenous_variables and lag_value not in all_lags:
+            raise TypeError('Data error for file '  + file + '. Entry for column \'lag\', row '
+            + str(i+1) + ' should be an integer in the range of specified lags.')
+        if not is_numeric(mean_value):
+            raise TypeError('Data error for file '  + file + '. Entry for column \'mean\', row '
+            + str(i+1) + ' is NaN of inf.')
+        if not is_numeric(var_value):
+            raise TypeError('Data error for file '  + file + '. Entry for column \'variance\', row '
+            + str(i+1) + ' is NaN of inf.')
+        if var_value <= 0:
+            raise TypeError('Data error for file '  + file + '. Entry for column \'variance\', row '
+            + str(i+1) + ' should be strictly positive.')
+
+
+def get_constrained_coefficients_table(data, endogenous_variables, exogenous_variables):
+    
+    """
+    get_constrained_coefficients_table(data, endogenous_variables, exogenous_variables)
+    recover constrained coefficient table in numeric format
+    
+    parameters:
+    data : pandas dataframe
+        dataframe containing constrained coefficient information
+    endogenous_variables : list of strings
+        list containing the names of endogenous variables
+    exogenous_variables : list of strings
+        list containing the names of exogenous variables
+
+    returns:
+    constrained_coefficients_table : ndarray
+        ndarray containing numeric values only for constrained coefficients prior
+    """
+    
+    automated_variables = ['constant', 'trend', 'quadratic_trend']
+    data = data.reset_index()
+    rows = data.shape[0]
+    temp = np.zeros((rows,5))
+    for i in range(rows):
+        variable_value = data.iloc[i].loc['variable']
+        responding_value = data.iloc[i].loc['responding_to']
+        lag_value = data.iloc[i].loc['lag']
+        mean_value = data.iloc[i].loc['mean']
+        var_value = data.iloc[i].loc['variance']    
+        temp[i,0] = endogenous_variables.index(variable_value) + 1
+        if responding_value == 'constant':
+            temp[i,1] = 0.1
+        elif responding_value == 'trend':
+            temp[i,1] = 0.2
+        elif responding_value == 'quadratic_trend':
+            temp[i,1] = 0.3
+        elif responding_value in endogenous_variables:
+            temp[i,1] = endogenous_variables.index(responding_value) + 1
+        elif responding_value in exogenous_variables:
+            temp[i,1] = -(exogenous_variables.index(responding_value) + 1)
+        if responding_value not in automated_variables:
+            temp[i,2] = lag_value
+        temp[i,3] = mean_value
+        temp[i,4] = var_value
+    constrained_coefficients_table = temp
+    return constrained_coefficients_table
+        
+    
+def check_long_run_table(data, endogenous_variables, file):
+    
+    """
+    check_long_run_table(data, endogenous_variables, file)
+    checks whether long run prior table is of valid format
+    
+    parameters:
+    data : pandas dataframe
+        dataframe containing constrained coefficient information
+    endogenous_variables : list of strings
+        list containing the names of endogenous variables
+    file : str
+        name of data file (with extension csv, xls or xlsx)
+
+    returns:
+    none
+    """
+
+    columns = data.columns.to_list()
+    if columns != endogenous_variables:
+        raise TypeError('Data error for file '  + file + '. Column names don\'t match the set of endogenous variables.')
+    rows = data.index.to_list()
+    if rows != endogenous_variables:
+        raise TypeError('Data error for file '  + file + '. Index names don\'t match the set of endogenous variables.')
+    types = data.dtypes.to_frame().rename(columns={0:'type'})
+    numeric_types = ['int64','float64']
+    for variable in types.index:
+        if types.loc[variable,'type'] not in numeric_types:
+            raise TypeError('Data error for file '  + file + '. Some entries in column ' + variable + ' are not numeric.')   
+    values = data.values
+    dimension = values.shape[0]
+    for i in range(dimension):
+        for j in range(dimension):
+            if not is_numeric(values[i,j]):
+                raise TypeError('Data error for file '  + file + '. Entry in row ' + str(i+1) + ', column ' + str(j+1) + ' is not numeric, NaN of inf.')
+        
+        
+def check_condition_table(data, endogenous_variables, periods, file):
+    
+    """
+    check_condition_table(data, endogenous_variables, periods, file)
+    checks whether condition table is of valid format
+    
+    parameters:
+    data : pandas dataframe
+        dataframe containing conditional forecast information
+    endogenous_variables : list of strings
+        list containing the names of endogenous variables
+    periods : int
+        number of forecast periods        
+    file : str
+        name of data file (with extension csv, xls or xlsx)
+
+    returns:
+    none
+    """      
+    
+    data = data.reset_index()
+    number_endogenous = len(endogenous_variables)
+    shock_list = ['shock' + str(i+1) for i in range(number_endogenous)]
+    columns = data.columns.to_list()
+    expected_columns = ['variable', 'period', 'mean', 'variance'] + shock_list
+    if columns != expected_columns:
+        raise TypeError('Data error for file '  + file + '. Column names don\'t match the required pattern.')
+    types = data.dtypes
+    if types['period'] != 'int64':
+        raise TypeError('Data error for file '  + file + '. Some entries in column ' \
+        + '\'period\' are not integers.')        
+    if types['mean'] not in ['int64','float64']:
+        raise TypeError('Data error for file '  + file + '. Some entries in column ' \
+        + '\'mean\' are not numeric.')    
+    if types['variance'] not in ['int64','float64']:
+        raise TypeError('Data error for file '  + file + '. Some entries in column ' \
+        + '\'variance\' are not numeric.') 
+    for i in range(number_endogenous):
+        if types['shock' + str(i+1)] not in ['int64','float64']:
+            raise TypeError('Data error for file '  + file + '. Entry in row 1, column "shock' + str(i+1) + '" should be 1 or empty.') 
+    rows = data.shape[0]
+    for i in range(rows):
+        variable = data.iloc[i].loc['variable']
+        period = data.iloc[i].loc['period']
+        mean = data.iloc[i].loc['mean']
+        variance = data.iloc[i].loc['variance']          
+        if variable not in endogenous_variables:
+            raise TypeError('Data error for file '  + file + '. Entry in row ' + str(i+1) + ', column "variable" does not correspond to one of the model endogenous variables.')
+        if not is_numeric(period):
+            raise TypeError('Data error for file '  + file + '. Entry in row ' + str(i+1) + ', column "period" is not numeric, NaN of inf.')
+        if period > periods:
+            raise TypeError('Data error for file '  + file + '. Entry in row ' + str(i+1) + ', column "period" is larger than the number of forecast periods.')
+        if period <= 0:
+            raise TypeError('Data error for file '  + file + '. Entry in row ' + str(i+1) + ', column "period" should be a positive integer.')
+        if not is_numeric(mean):
+            raise TypeError('Data error for file '  + file + '. Entry in row ' + str(i+1) + ', column "mean" is not numeric, NaN of inf.')
+        if not is_numeric(variance):
+            raise TypeError('Data error for file '  + file + '. Entry in row ' + str(i+1) + ', column "variance" is not numeric, NaN of inf.')
+        if variance < 0:
+            raise TypeError('Data error for file '  + file + '. Entry in row ' + str(i+1) + ', column "variance" should be non-negative.')  
+        if i == 0:
+            for j in range(number_endogenous):
+                shock = data.iloc[i].loc['shock' + str(j+1)]
+                if shock not in [0,1]:
+                    raise TypeError('Data error for file '  + file + '. Entry in row 1, column "shock' + str(j+1) + '" should be 0 or 1.') 
+            
+
+def get_condition_table(data, endogenous_variables):
+    
+    """
+    get_condition_table(data, endogenous_variables)
+    recover condition table in numeric format
+    
+    parameters:
+    data : pandas dataframe
+        dataframe containing constrained coefficient information
+    endogenous_variables : list of strings
+        list containing the names of endogenous variables
+
+    returns:
+    condition_table : ndarray
+        ndarray containing numeric values for conditions
+    shock_table : ndarray
+        ndarray containing numeric values for shocks
+    """       
+    
+    data = data.reset_index()
+    rows = data.shape[0]
+    condition_table = np.zeros((rows,4))
+    for i in range(rows):
+        variable = data.loc[i,'variable']
+        condition_table[i,0] = endogenous_variables.index(variable) + 1
+        condition_table[i,1] = data.loc[i,'period']
+        condition_table[i,2] = data.loc[i,'mean']
+        if data.loc[i,'variance'] == 0:
+            condition_table[i,3] = 1e-16
+        else:
+            condition_table[i,3] = data.loc[i,'variance']
+    shocks = data.iloc[0,4:].fillna(0)
+    shock_table = shocks.values
+    return condition_table, shock_table
+
+
+def get_raw_sample_dates(path, file, start_date, end_date):
+    
+    """
+    get_raw_sample_dates(path, file, start_date, end_date)
+    get sample dates, in raw format (as in data file, without any convesion to datetime)
+    
+    parameters:
+    path : str
+        path to folder containing data file
+    file : str
+        name of data file (with extension csv, xls or xlsx)
+    start_date : str
+        sample start date to search in dataframe index
+    end_date : str
+        sample end date to search in dataframe index
+
+    returns:
+    raw_dates : datetime index
+        index of Datetime entries
+    """  
+    
+    data = load_data(path, file)
+    raw_dates = data.loc[start_date:end_date].index
+    return raw_dates
+
+        
+def check_restriction_table(data, raw_dates, endogenous_variables, proxy_variables, var_type, irf_periods, file):
+
+    """
+    check_restriction_table(data, raw_dates, endogenous_variables, irf_periods, file)
+    checks whether restriction table is of valid format
+    
+    parameters:
+    data : pandas dataframe
+        dataframe containing constrained coefficient information
+    raw_dates : datetime index
+        index of Datetime entries
+    endogenous_variables : list of strings
+        list containing the names of endogenous variables
+    proxy_variables : list of strings
+        list containing the names of proxy variables        
+    var_type : int
+        type of VAR model
+    irf_periods : int
+        number of IRF periods    
+    file : str
+        name of data file (with extension csv, xls or xlsx)
+
+    returns:
+    none
+    """  
+
+    data = data.reset_index()
+    number_endogenous = len(endogenous_variables)
+    number_proxys = len(proxy_variables)
+    shock_list = ['shock' + str(i+1) for i in range(number_endogenous)]
+    columns = data.columns.to_list()
+    expected_columns = ['type', 'variable', 'period'] + shock_list
+    if columns != expected_columns:
+        raise TypeError('Data error for file '  + file + '. Column names don\'t match the required pattern.')
+    data = data.astype({'period': 'string'})
+    rows = data.shape[0]
+    for i in range(rows):
+        restriction_type = data.iloc[i].loc['type']
+        variable = data.iloc[i].loc['variable']    
+        period = data.iloc[i].loc['period']
+        if restriction_type not in ['sign', 'zero', 'shock', 'historical', 'covariance']:
+            raise TypeError('Data error for file '  + file + '. Entry in row ' + str(i+1) + ', column "type" does not correspond to one of the allowed restriction types.')
+        if restriction_type == 'sign' or restriction_type == 'zero':
+            if not period.isdigit():
+                raise TypeError('Data error for file '  + file + '. Entry in row ' + str(i+1) + ', column "period" should be an integer.')
+            elif int(period) < 0 or int(period) > irf_periods:
+                raise TypeError('Data error for file '  + file + '. Entry in row ' + str(i+1) + ', column "period" should be an integer between 0 and IRF periods.')
+        if (restriction_type == 'shock' or restriction_type == 'historical') and period not in raw_dates:
+            raise TypeError('Data error for file '  + file + '. Entry in row ' + str(i+1) + ', column "period" should be a sample date.')
+        if restriction_type != 'shock' and restriction_type != 'covariance' and variable not in endogenous_variables:
+            raise TypeError('Data error for file '  + file + '. Entry in row ' + str(i+1) + ', column "variable" does not correspond to one of the model endogenous variables.')
+        for j in range(number_endogenous):
+            shock = str(data.iloc[i,3+j])
+            try:
+                shock = float(shock)
+            except:
+                raise TypeError('Data error for file '  + file + '. Entry in row ' + str(i+1) + ', column "shock' + str(j+1) + '" is not numeric.')
+            if shock not in [-1, 0, 1]:
+                raise TypeError('Data error for file '  + file + '. Entry in row ' + str(i+1) + ', column "shock' + str(j+1) + '" is not -1, 0 or 1.')
+        if len(np.nonzero(data.iloc[i,3:].values)) not in [1,2]:
+            raise TypeError('Data error for file '  + file + '. Ill-defined restrictions in row ' + str(i+1) + ', shock columns must contain either 1 or 2 non-zero coefficients.')
+        if restriction_type == 'covariance' and var_type != 7:
+            raise TypeError('Data error for file '  + file + '. Covariance restriction found in row ' + str(i+1) + ', but VAR type is not proxy-SVAR.')
+        elif restriction_type == 'covariance' and var_type == 7:
+            for j in range(number_endogenous-number_proxys):
+                shock = data.iloc[i,3+j]
+                if shock != 0:
+                    raise TypeError('Data error for file '  + file + '. Entry in row ' + str(i+1) + ', column "shock' + str(j+1) + '" has covariance restriction while not correlated with proxys.')
+                
+
+def get_restriction_table(data, raw_dates, endogenous_variables, proxy_variables):
+    
+    """
+    get_restriction_table(data, raw_dates, endogenous_variables)
+    recover restriction table in numeric format
+    
+    parameters:
+    data : pandas dataframe
+        dataframe containing constrained coefficient information
+    raw_dates : datetime index
+        index of Datetime entries        
+    endogenous_variables : list of strings
+        list containing the names of endogenous variables
+    proxy_variables : list of strings
+        list containing the names of proxy variables         
+
+    returns:
+    restriction_table : ndarray
+        ndarray containing numeric values for restrictions
+    """   
+    
+    data = data.reset_index()
+    rows = data.shape[0]
+    columns = data.shape[1]
+    number_endogenous = len(endogenous_variables)
+    restriction_types = ['zero', 'sign', 'shock', 'historical', 'covariance']
+    restriction_table = np.zeros((rows,columns))
+    for i in range(rows):
+        restriction_type = data.loc[i,'type']
+        period = data.loc[i,'period']
+        variable = data.loc[i,'variable']
+        restriction_table[i,0] = restriction_types.index(restriction_type) + 1
+        if restriction_type == 'sign' or restriction_type == 'zero' or restriction_type == 'historical':
+            restriction_table[i,1] = endogenous_variables.index(variable) + 1
+        elif restriction_type == 'covariance':
+            restriction_table[i,1] = proxy_variables.index(variable) + 1     
+        if restriction_type == 'sign' or restriction_type == 'zero':
+            restriction_table[i,2] = int(period)
+        elif restriction_type == 'shock' or restriction_type == 'historical':
+            restriction_table[i,2] = raw_dates.tolist().index(period) + 1
+        for j in range(3,3+number_endogenous):
+            coefficient = data.iloc[i,j]
+            restriction_table[i,j] = coefficient
+    return restriction_table
+    
+
+def identify_model(model):
+    
+    """
+    identify_model(model)
+    get model and model type
+    
+    parameters:
+    model : class
+        class from which model must be extracted
+
+    returns:
+    model_name : string
+        model name
+    model_class : int
+        general model class (linear regression, VAR, ...)
+    model_type : int
+        specific model type (maximum likelihood regression, simple Bayesian regression, ...)
+    """
+    
+    class_name = model.__class__.__name__
+    if class_name == 'MaximumLikelihoodRegression':
+        model_name = 'Maximum Likelihood Regression'
+        model_class = 1
+        model_type = 1
+    elif class_name == 'SimpleBayesianRegression':
+        model_name = 'Simple Bayesian Regression'
+        model_class = 1
+        model_type = 2
+    elif class_name == 'HierarchicalBayesianRegression':
+        model_name = 'Hierarchical Bayesian Regression'
+        model_class = 1
+        model_type = 3
+    elif class_name == 'IndependentBayesianRegression':
+        model_name = 'Independent Bayesian Regression'
+        model_class = 1
+        model_type = 4
+    elif class_name == 'HeteroscedasticBayesianRegression':
+        model_name = 'Heteroscedastic Bayesian Regression'
+        model_class = 1
+        model_type = 5
+    elif class_name == 'AutocorrelatedBayesianRegression':
+        model_name = 'Autocorrelated Bayesian Regression'
+        model_class = 1
+        model_type = 6  
+    elif class_name == 'MaximumLikelihoodVar':
+        model_name = 'Maximum Likelihood Var'
+        model_class = 2
+        model_type = 1        
+    elif class_name == 'MinnesotaBayesianVar':
+        model_name = 'Minnesota Bayesian Var'
+        model_class = 2
+        model_type = 2
+    elif class_name == 'NormalWishartBayesianVar':
+        model_name = 'Normal-Wishart Bayesian Var'
+        model_class = 2
+        model_type = 3 
+    elif class_name == 'IndependentBayesianVar':
+        model_name = 'Independent Bayesian Var'
+        model_class = 2
+        model_type = 4 
+    elif class_name == 'DummyObservationBayesianVar':
+        model_name = 'Dummy Observation Bayesian Var'
+        model_class = 2
+        model_type = 5 
+    elif class_name == 'LargeBayesianVar':
+        model_name = 'Large Bayesian Var'
+        model_class = 2
+        model_type = 6 
+    elif class_name == 'BayesianProxySvar':
+        model_name = 'Bayesian Proxy Svar'
+        model_class = 2
+        model_type = 7                 
+    return model_name, model_class, model_type
+
 
 
