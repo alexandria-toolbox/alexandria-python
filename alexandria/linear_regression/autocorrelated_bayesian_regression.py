@@ -211,7 +211,7 @@ class AutocorrelatedBayesianRegression(LinearRegression, BayesianRegression):
    
     forecast_estimates : ndarray of shape (m,3)
         estimates for predictions   
-        column 1: interval lower bound; column 2: point estimate; 
+        column 1: point estimate; column 2: interval lower bound;
         column 3: interval upper bound
     
     fitted_estimates : ndarray of shape (n,)
@@ -234,7 +234,7 @@ class AutocorrelatedBayesianRegression(LinearRegression, BayesianRegression):
     ----------
     estimate
     forecast
-    fit_and_residuals
+    insample_fit
     forecast_evaluation
     marginal_likelihood
     """    
