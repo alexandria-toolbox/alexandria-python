@@ -259,10 +259,9 @@ def vector_autoregression_main_code(user_inputs):
 
     # estimate conditional forecasts, if selected
     if var_type != 1 and conditional_forecast and conditional_forecast_type == 1:
-        var.conditional_forecast(forecast_periods, conditional_forecast_credibility, condition_table, Z_p)
-    elif var_type != 1 and conditional_forecast and conditional_forecast_type == 2:      
-        var.structural_conditional_forecast(forecast_periods, conditional_forecast_credibility,\
-                                            condition_table, shock_table, Z_p)
+        var.conditional_forecast(forecast_periods, conditional_forecast_credibility, condition_table, [], 1, Z_p)
+    elif var_type != 1 and conditional_forecast and conditional_forecast_type == 2:  
+        var.conditional_forecast(forecast_periods, conditional_forecast_credibility, condition_table, shock_table, 2, Z_p) 
 
 
     #-------------------------------------------------------------

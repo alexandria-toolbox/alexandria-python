@@ -177,19 +177,23 @@ class BayesianVar(object):
         return hd_estimates    
     
     
-    def conditional_forecast(self, h, credibility_level, conditions, Z_p=[]):
+    def conditional_forecast(self, h, credibility_level, conditions, shocks, conditional_forecast_type, Z_p=[]):
 
         """
-        conditional_forecast(h, credibility_level, conditions, Z_p=[])
-        estimates conditional forecasts for the Bayesian VAR model, using algorithm 14.1
+        conditional_forecast(self, h, credibility_level, conditions, shocks, conditional_forecast_type, Z_p=[])
+        estimates conditional forecasts for the Bayesian VAR model, using algorithms 14.1 and 14.2
         
         parameters:
         h : int
             number of forecast periods
-        credibility_level: float between 0 and 1
+        credibility_level : float between 0 and 1
             credibility level for forecast credibility bands
-        conditions: ndarray of shape (n_conditions,4)
-            table defining conditions (column 1: variable, column 2: period, column 3: mean, column 4: variance)            
+        conditions : ndarray of shape (n_conditions,4)
+            table defining conditions (column 1: variable, column 2: period, column 3: mean, column 4: variance) 
+        shocks: empty list or ndarray of shape (n,)
+            vector defining shocks generating the conditions; should be empty if conditional_forecast_type = 1          
+        conditional_forecast_type : int
+            conditional forecast type (1 = agnostic, 2 = structural)
         Z_p : empty list or ndarray of dimension (h, n_exo)
             empty list unless the model includes exogenous other than constant, trend and quadratic trend
             if not empty, n_exo is the number of additional exogenous variables
@@ -199,52 +203,21 @@ class BayesianVar(object):
             page 1: median; page 2: interval lower bound; page 3: interval upper bound
         """         
         
-        # get conditional forecasts
-        self.__make_conditional_forecast(h, conditions, Z_p)
+        # if conditional forecast type is agnostic
+        if conditional_forecast_type == 1:
+            # get conditional forecasts
+            self.__make_conditional_forecast(h, conditions, Z_p)
+        # if instead conditional forecast type is structural
+        elif conditional_forecast_type == 2:
+            # establish type of shocks
+            shock_type = self.__check_shock_type(h, conditions, shocks)
+            # get structural conditional forecasts
+            self.__make_structural_conditional_forecast(h, conditions, shocks, Z_p, shock_type)
         # obtain posterior estimates
         self.__conditional_forecast_posterior_estimates(credibility_level)
         conditional_forecast_estimates = self.conditional_forecast_estimates
-        return conditional_forecast_estimates         
-
-
-    def structural_conditional_forecast(self, h, credibility_level, conditions, shocks, Z_p=[]):
-
-        """
-        structural_conditional_forecast(h, credibility_level, conditions, shocks, Z_p=[])
-        estimates structural conditional forecasts for the Bayesian VAR model, using algorithm 14.2
-        
-        parameters:
-        h : int
-            number of forecast periods
-        credibility_level: float between 0 and 1
-            credibility level for forecast credibility bands
-        conditions: ndarray of shape (n_conditions,4)
-            table defining conditions (column 1: variable, column 2: period, column 3: mean, column 4: variance) 
-        shocks: ndarray of shape (n,)
-            vector defining shocks generating the conditions (1: yes, 0: no)
-        Z_p : empty list or ndarray of dimension (h, n_exo)
-            empty list unless the model includes exogenous other than constant, trend and quadratic trend
-            if not empty, n_exo is the number of additional exogenous variables
-        
-        returns:
-        structural_conditional_forecast_estimates : ndarray of shape (h,n,3)
-            page 1: median; page 2: interval lower bound; page 3: interval upper bound
-        """         
-        
-        # check conditions, shocks, and establish type of conditions
-        condition_type = self.__check_condition_type(h, conditions, shocks)
-        # if any check is not validated, return empty estimates
-        if len(condition_type) == 0:
-            structural_conditional_forecast_estimates = []
-        # else, proceed with algorithms
-        else:
-            # run structural conditional forecast algorithm
-            self.__make_structural_conditional_forecast(h, conditions, shocks, Z_p, condition_type)
-            # obtain posterior estimates
-            self.__structural_conditional_forecast_posterior_estimates(credibility_level)
-            structural_conditional_forecast_estimates = self.structural_conditional_forecast_estimates
-        return structural_conditional_forecast_estimates   
-
+        return conditional_forecast_estimates       
+    
 
     #---------------------------------------------------
     # Methods (Access = private)
@@ -718,7 +691,68 @@ class BayesianVar(object):
                 cu.progress_bar(i, self.iterations, 'Conditional forecasts:')  
         self.mcmc_conditional_forecast = mcmc_conditional_forecast
         
+
+    def __check_shock_type(self, h, conditions, shocks): 
         
+        # check for structural identification
+        if self.structural_identification == 1:
+            if self.verbose:
+                cu.progress_bar_complete('Conditional forecasts:')
+            shock_type = 'none'          
+        else:
+            # identify shocks
+            if np.sum(shocks) == self.n:
+                shock_type = 'all_shocks'
+            else:
+                shock_type = 'shock-specific'
+        return shock_type
+        
+
+    def __make_structural_conditional_forecast(self, h, conditions, shocks, Z_p, shock_type):
+
+        # if there is an issue, return empty mcmc matrix
+        if shock_type == 'none':
+            self.mcmc_conditional_forecast = []
+            if self.verbose:
+                cu.progress_bar_complete('Conditional forecasts:')
+        # if condition type is well defined, proceed
+        else:
+            # make regressors Z_p and Y
+            Z_p, Y = vu.make_forecast_regressors(Z_p, self.Y, h, self.p, self.T,
+                      self.exogenous, self.constant, self.trend, self.quadratic_trend)
+            has_irf = hasattr(self, 'mcmc_structural_irf') and self.mcmc_structural_irf.shape[2] >= h
+            # make conditional forecast regressors R, y_bar and omega
+            R, y_bar, omega = vu.conditional_forecast_regressors_3(conditions, h, self.n)
+            if shock_type == 'shock-specific':
+                P, non_generating = vu.conditional_forecast_regressors_5(shocks, h, self.n)
+            # initiate storage and loop over iterations
+            mcmc_conditional_forecast = np.zeros((h,self.n,self.iterations))
+            for i in range(self.iterations): 
+                index = self._svar_index[i]
+                # make predictions, absent shocks
+                f = vu.linear_forecast(self.mcmc_beta[:,:,index], h, Z_p, Y, self.n)
+                # recover structural IRF or estimate them
+                if has_irf:
+                    structural_irf = self.mcmc_structural_irf[:,:,:h,i]
+                else:
+                    irf = vu.impulse_response_function(self.mcmc_beta[:,:,index], self.n, self.p, h)
+                    structural_irf = vu.structural_impulse_response_function(irf, self.mcmc_H[:,:,i], self.n)  
+                # recover iteration-specific regressors
+                M = vu.conditional_forecast_regressors_4(structural_irf, self.n, h)
+                # get posterior mean and variance, depending on condition type                
+                if shock_type == 'all_shocks':
+                    mu_hat, Omega_hat = vu.conditional_forecast_posterior(y_bar, f, M, R, self.mcmc_Gamma[i,:], omega, self.n, h)
+                elif shock_type == 'shock-specific':
+                    Gamma_nd = vu.conditional_forecast_regressors_6(self.mcmc_Gamma[i,:], non_generating, h)
+                    mu_hat, Omega_hat = vu.shock_specific_conditional_forecast_posterior(\
+                                        y_bar, f, M, R, P, self.mcmc_Gamma[i,:], Gamma_nd, omega, self.n, h)                
+                # sample values
+                mcmc_conditional_forecast[:,:,i] = rng.multivariate_normal(mu_hat, Omega_hat).reshape(h,self.n)
+                if self.verbose:
+                    cu.progress_bar(i, self.iterations, 'Conditional forecasts:')
+            self.mcmc_conditional_forecast = mcmc_conditional_forecast
+        
+    
     def __conditional_forecast_posterior_estimates(self, credibility_level):
 
         if len(self.mcmc_conditional_forecast) == 0:
@@ -726,73 +760,7 @@ class BayesianVar(object):
         else:
             mcmc_conditional_forecast = self.mcmc_conditional_forecast
             conditional_forecast_estimates = vu.posterior_estimates(mcmc_conditional_forecast, credibility_level)
-            self.conditional_forecast_estimates = conditional_forecast_estimates        
-        
-        
-    def __check_condition_type(self, h, conditions, shocks): 
-        
-        # initiate conditional forecast attributes
-        self.mcmc_stuctural_conditional_forecast = []
-        self.stuctural_conditional_forecast_estimates = []
-        # check that some structural identification is available
-        if self.structural_identification == 1:
-            if self.verbose:
-                cu.progress_bar_complete('Conditional forecasts:')
-            condition_type = []
-        else:
-            # identify shocks
-            if np.sum(shocks) == self.n:
-                condition_type = 'all_shocks'
-            else:
-                condition_type = 'shock-specific'
-        return condition_type
-        
-
-    def __make_structural_conditional_forecast(self, h, conditions, shocks, Z_p, condition_type):
-
-        # make regressors Z_p and Y
-        Z_p, Y = vu.make_forecast_regressors(Z_p, self.Y, h, self.p, self.T,
-                  self.exogenous, self.constant, self.trend, self.quadratic_trend)
-        has_irf = hasattr(self, 'mcmc_structural_irf') and self.mcmc_structural_irf.shape[2] >= h
-        # make conditional forecast regressors R, y_bar and omega
-        R, y_bar, omega = vu.conditional_forecast_regressors_3(conditions, h, self.n)
-        if condition_type == 'shock-specific':
-            P, non_generating = vu.conditional_forecast_regressors_5(shocks, h, self.n)
-        # initiate storage and loop over iterations
-        mcmc_structural_conditional_forecast = np.zeros((h,self.n,self.iterations))
-        for i in range(self.iterations): 
-            index = self._svar_index[i]
-            # make predictions, absent shocks
-            f = vu.linear_forecast(self.mcmc_beta[:,:,index], h, Z_p, Y, self.n)
-            # recover structural IRF or estimate them
-            if has_irf:
-                structural_irf = self.mcmc_structural_irf[:,:,:h,i]
-            else:
-                irf = vu.impulse_response_function(self.mcmc_beta[:,:,index], self.n, self.p, h)
-                structural_irf = vu.structural_impulse_response_function(irf, self.mcmc_H[:,:,i], self.n)  
-            # recover iteration-specific regressors
-            M = vu.conditional_forecast_regressors_4(structural_irf, self.n, h)
-            # get posterior mean and variance, depending on condition type                
-            if condition_type == 'all_shocks':
-                mu_hat, Omega_hat = vu.conditional_forecast_posterior(y_bar, f, M, R, self.mcmc_Gamma[i,:], omega, self.n, h)
-            elif condition_type == 'shock-specific':
-                Gamma_nd = vu.conditional_forecast_regressors_6(self.mcmc_Gamma[i,:], non_generating, h)
-                mu_hat, Omega_hat = vu.shock_specific_conditional_forecast_posterior(\
-                                    y_bar, f, M, R, P, self.mcmc_Gamma[i,:], Gamma_nd, omega, self.n, h)                
-            # sample values
-            mcmc_structural_conditional_forecast[:,:,i] = rng.multivariate_normal(mu_hat, Omega_hat).reshape(h,self.n)
-            if self.verbose:
-                cu.progress_bar(i, self.iterations, 'Conditional forecasts:')
-        self.mcmc_structural_conditional_forecast = mcmc_structural_conditional_forecast 
-
-        
-    def __structural_conditional_forecast_posterior_estimates(self, credibility_level):
-
-            mcmc_structural_conditional_forecast = self.mcmc_structural_conditional_forecast
-            structural_conditional_forecast_estimates = \
-            vu.posterior_estimates(mcmc_structural_conditional_forecast, credibility_level)
-            self.structural_conditional_forecast_estimates = structural_conditional_forecast_estimates       
-   
+            self.conditional_forecast_estimates = conditional_forecast_estimates      
 
 
         
