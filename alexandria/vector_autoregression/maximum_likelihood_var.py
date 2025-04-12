@@ -83,7 +83,7 @@ class MaximumLikelihoodVar(VectorAutoRegression):
     Sigma : ndarray of size (n,n)
         variance-covariance ndarray of VAR residuals, defined in (4.11.1)
     
-    beta_estimates : ndarray of size (k,n,3)
+    beta_estimates : ndarray of size (k,n,4)
         estimates of VAR coefficients
         page 1: median, page 2: st dev,  page 3: lower bound, page 4: upper bound
     
@@ -298,7 +298,7 @@ class MaximumLikelihoodVar(VectorAutoRegression):
         forecast evaluation criteria for the maximum likelihood VAR model
         
         parameters:
-        Y : ndarray of shape (perods,n)
+        Y : ndarray of shape (f_periods,n)
             array of realised values for forecast evaluation
             
         returns:
@@ -357,8 +357,8 @@ class MaximumLikelihoodVar(VectorAutoRegression):
             credibility level for forecast credibility bands            
             
         returns:
-        fevd_estimates : ndarray of shape (n,n,h)
-            dimensions are variable, shock, period
+        fevd_estimates : ndarray of shape (n,n,h,3)
+            first 3 dimensions are variable, shock, period; 4th dimension is median, lower bound, upper bound
         """
 
         # get forecast error variance decomposition

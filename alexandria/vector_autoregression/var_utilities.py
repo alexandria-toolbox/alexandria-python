@@ -1249,7 +1249,7 @@ def conditional_forecast_regressors_2(B, Sigma, conditions, Z_p, n, m, p, h):
         for j in range(len(condition_variables)):
             variable = int(condition_variables[j])-1
             K[variable,variable,i] = 100
-    Upsilon_00 = np.zeros((n*p,n*p))
+    Upsilon_00 = 1e-10 * np.identity(n*p)
     Upsilon_00[:n,:n] = Sigma
     return mu, F, K, Upsilon_00    
 
