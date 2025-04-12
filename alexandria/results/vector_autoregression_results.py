@@ -42,12 +42,20 @@ class VectorAutoregressionResults(object):
             self.complementary_information['dates'] = np.arange(1-p,T+1)
         # forecast dates
         if 'forecast_dates' not in self.complementary_information:
-            if hasattr(self.model, 'forecast_estimates') or hasattr(self.model, 'conditional_forecast_estimates'):
+            if hasattr(self.model, 'forecast_estimates'):
                 f_periods = self.model.forecast_estimates.shape[0]
                 T = self.model.T
                 self.complementary_information['forecast_dates'] = np.arange(T+1,T+f_periods+1)
             else:
                 self.complementary_information['forecast_dates'] = []
+        # conditional forecast dates
+        if 'conditional_forecast_dates' not in self.complementary_information:
+            if hasattr(self.model, 'conditional_forecast_estimates'):
+                f_periods = self.model.conditional_forecast_estimates.shape[0]
+                T = self.model.T
+                self.complementary_information['conditional_forecast_dates'] = np.arange(T+1,T+f_periods+1)
+            else:
+                self.complementary_information['conditional_forecast_dates'] = []   
         # proxy variables
         model_type = self.complementary_information['model_type']
         if model_type == 7 and 'proxy_variables' not in self.complementary_information:
@@ -580,19 +588,16 @@ class VectorAutoregressionResults(object):
     
     def __make_var_conditional_forecast_summary(self):
         # run only if forecast has been run
-        if (hasattr(self.model, 'conditional_forecast_estimates') and len(self.model.conditional_forecast_estimates) != 0) or \
-           (hasattr(self.model, 'structural_conditional_forecast_estimates') and len(self.model.structural_conditional_forecast_estimates) != 0):
+        if hasattr(self.model, 'conditional_forecast_estimates') and len(self.model.conditional_forecast_estimates) != 0:
             forecast_dataframe = []
             endogenous_variables = self.complementary_information['endogenous_variables']
             n = self.model.n
             p = self.model.p
             Y = self.model.Y
             insample_index = self.complementary_information['dates'][p:]
-            forecast_index = self.complementary_information['forecast_dates']
+            forecast_index = self.complementary_information['conditional_forecast_dates']
             if hasattr(self.model, 'conditional_forecast_estimates'):
                 forecasts = self.model.conditional_forecast_estimates
-            elif hasattr(self.model, 'structural_conditional_forecast_estimates'):
-                forecasts = self.model.structural_conditional_forecast_estimates
             for i in range (n):
                 variable = endogenous_variables[i]
                 header = [variable+'_actual', variable+'_med', variable+'_low', variable+'_upp']
