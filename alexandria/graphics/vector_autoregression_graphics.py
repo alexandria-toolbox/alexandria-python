@@ -43,6 +43,12 @@ class VectorAutoregressionGraphics(object):
             forecast_periods = self.model.forecast_estimates.shape[0]
             forecast_dates = np.arange(T+1,T+forecast_periods+1)
             self.complementary_information['forecast_dates'] = forecast_dates
+        # conditional forecast_dates
+        if hasattr(self.model, 'conditional_forecast_estimates') and 'conditional_forecast_dates' not in self.complementary_information:
+            T = self.model.T
+            forecast_periods = self.model.conditional_forecast_estimates.shape[0]
+            forecast_dates = np.arange(T+1,T+forecast_periods+1)
+            self.complementary_information['conditional_forecast_dates'] = forecast_dates              
         # actual
         if 'Y_p' not in self.complementary_information:
             self.complementary_information['Y_p'] = []
@@ -156,20 +162,16 @@ class VectorAutoregressionGraphics(object):
 
 
     def _var_conditional_forecasts(self, show, save):
-        if hasattr(self.model, 'conditional_forecast_estimates') or \
-           hasattr(self.model, 'structural_conditional_forecast_estimates'):  
+        if hasattr(self.model, 'conditional_forecast_estimates'):  
             # recover graphics elements
             n = self.model.n
             p = self.model.p
             actual = self.model.Y
-            if hasattr(self.model, 'conditional_forecast_estimates'):
-                forecasts = self.model.conditional_forecast_estimates
-            elif hasattr(self.model, 'structural_conditional_forecast_estimates'):
-                forecasts = self.model.structural_conditional_forecast_estimates
+            forecasts = self.model.conditional_forecast_estimates
             Y_p = self.complementary_information['Y_p']
             Y_p_i = []
             dates = self.complementary_information['dates'][p:]
-            forecast_dates = self.complementary_information['forecast_dates']
+            forecast_dates = self.complementary_information['conditional_forecast_dates']
             path = self.path
             endogenous = self.complementary_information['endogenous_variables']
             # produce individual graphs
