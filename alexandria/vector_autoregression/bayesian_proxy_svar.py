@@ -118,8 +118,8 @@ class BayesianProxySvar(VectorAutoRegression,BayesianVar):
     pi1 : float
         overall tightness hyperparameter, defined in (4.11.17)
     
-    pi2 : float
-        cross-variable shrinkage hyperparameter, defined in (4.11.18)
+    pi3 : float, default = 1
+        lag decay hyperparameter, defined in (4.11.17) 
     
     pi4 : float
         exogenous slackness hyperparameter, defined in (4.11.19)    
