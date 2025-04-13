@@ -99,15 +99,6 @@ class BayesianProxySvar(VectorAutoRegression,BayesianVar):
     
     restriction_table : ndarray
         numerical matrix of dictural identification restrictions
-    
-    endogenous : ndarray of size (n_obs,n_endogenous)
-        endogenous variables, defined in (4.11.1)
-    
-    proxys : ndarray of size (n_obs,n_proxys)
-        proxy variables, defined in (4.14.42)
-    
-    exogenous : ndarray of size (n_obs,n_exogenous)
-        exogenous variables, defined in (4.11.1)
         
     lags : int
         number of lags, defined in (4.11.1)
