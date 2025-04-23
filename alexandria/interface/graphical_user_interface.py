@@ -80,8 +80,8 @@ class GraphicalUserInterface(QMainWindow, DefaultInputInterface, Tab1Interface, 
         # calculate interface position and create main window
         interface_width = 1000
         interface_heigth = 650
-        left_shift = (screen_width - interface_width) / 2
-        up_shift = (screen_heigth - interface_heigth) / 2
+        left_shift = int((screen_width - interface_width) / 2)
+        up_shift = int((screen_heigth - interface_heigth) / 2)
         # main window
         super().__init__()
         self.setGeometry(left_shift, up_shift, interface_width, interface_heigth)      

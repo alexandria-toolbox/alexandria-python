@@ -2,9 +2,9 @@
 # Imports
 #--------------------------------------------------- 
 
-
-import sys
 import IPython
+IPython.get_ipython().run_line_magic('reset', '-sf')   
+import sys
 import warnings
 import matplotlib.pyplot as plt
 import alexandria.console.console_utilities as cu
@@ -17,7 +17,6 @@ from alexandria.interface.graphical_user_interface import GraphicalUserInterface
 
 
 # clear workspace and console
-IPython.get_ipython().magic('reset -sf')
 cu.clear_console()
 warnings.filterwarnings('ignore')
 plt.close('all')

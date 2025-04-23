@@ -224,7 +224,7 @@ class Tab2RegressionInterface(object):
         
         # prior mean V label
         self.t2_lr_txt9 = QLabel(self)
-        self.t2_lr_txt9.move(30, 327.5)
+        self.t2_lr_txt9.move(30, 328)
         self.t2_lr_txt9.setFixedSize(20, 20)
         self.t2_lr_txt9.setText(' V') 
         self.t2_lr_txt9.setAlignment(Qt.AlignLeft)
@@ -234,7 +234,7 @@ class Tab2RegressionInterface(object):
         
         # prior mean V edit
         self.t2_lr_edt5 = QLineEdit(self)
-        self.t2_lr_edt5.move(155, 322.5)       
+        self.t2_lr_edt5.move(155, 323)
         self.t2_lr_edt5.resize(70, 25)                                           
         self.t2_lr_edt5.setAlignment(Qt.AlignCenter)     
         self.t2_lr_edt5.setStyleSheet('background-color: rgb(255, 255, 255); \
@@ -246,7 +246,7 @@ class Tab2RegressionInterface(object):
         # hierarchical label
         self.t2_lr_txt10 = QLabel(self)
         self.t2_lr_txt10.move(275, 260)
-        self.t2_lr_txt10.setFixedSize(180, 20)
+        self.t2_lr_txt10.setFixedSize(180, 22)
         self.t2_lr_txt10.setText(' Hierarchical') 
         self.t2_lr_txt10.setAlignment(Qt.AlignLeft)
         self.t2_lr_txt10.setStyleSheet('font-size: 14pt; font-family: Serif; \
@@ -277,7 +277,7 @@ class Tab2RegressionInterface(object):
         
         # scale delta label
         self.t2_lr_txt12 = QLabel(self)
-        self.t2_lr_txt12.move(275, 322.5)
+        self.t2_lr_txt12.move(275, 323)
         self.t2_lr_txt12.setFixedSize(200, 25)
         self.t2_lr_txt12.setText(' δ') 
         self.t2_lr_txt12.setAlignment(Qt.AlignLeft)
@@ -287,7 +287,7 @@ class Tab2RegressionInterface(object):
         
         # scale delta edit
         self.t2_lr_edt7 = QLineEdit(self)
-        self.t2_lr_edt7.move(400, 322.5)       
+        self.t2_lr_edt7.move(400, 323)
         self.t2_lr_edt7.resize(70, 25)                                           
         self.t2_lr_edt7.setAlignment(Qt.AlignCenter)     
         self.t2_lr_edt7.setStyleSheet('background-color: rgb(255, 255, 255); \
@@ -298,8 +298,8 @@ class Tab2RegressionInterface(object):
         
         # heteroscedastic label
         self.t2_lr_txt13 = QLabel(self)
-        self.t2_lr_txt13.move(30, 367.5)
-        self.t2_lr_txt13.setFixedSize(200, 20)
+        self.t2_lr_txt13.move(30, 368)
+        self.t2_lr_txt13.setFixedSize(200, 22)
         self.t2_lr_txt13.setText(' Heteroscedastic') 
         self.t2_lr_txt13.setAlignment(Qt.AlignLeft)
         self.t2_lr_txt13.setStyleSheet('font-size: 14pt; font-family: Serif; \
@@ -309,8 +309,8 @@ class Tab2RegressionInterface(object):
         
         # heteroscedastic mean g label
         self.t2_lr_txt14 = QLabel(self)
-        self.t2_lr_txt14.move(30, 402.5)
-        self.t2_lr_txt14.setFixedSize(200, 20)
+        self.t2_lr_txt14.move(30, 402)
+        self.t2_lr_txt14.setFixedSize(200, 22)
         self.t2_lr_txt14.setText(' g') 
         self.t2_lr_txt14.setAlignment(Qt.AlignLeft)
         self.t2_lr_txt14.setStyleSheet('font-size: 12pt; font-family: Serif; \
@@ -319,7 +319,7 @@ class Tab2RegressionInterface(object):
         
         # heteroscedastic mean g edit
         self.t2_lr_edt8 = QLineEdit(self)
-        self.t2_lr_edt8.move(155, 397.5)       
+        self.t2_lr_edt8.move(155, 398) 
         self.t2_lr_edt8.resize(70, 25)                                           
         self.t2_lr_edt8.setAlignment(Qt.AlignCenter)     
         self.t2_lr_edt8.setStyleSheet('background-color: rgb(255, 255, 255); \
@@ -331,7 +331,7 @@ class Tab2RegressionInterface(object):
         # heteroscedastic variance Q label
         self.t2_lr_txt15 = QLabel(self)
         self.t2_lr_txt15.move(30, 435)
-        self.t2_lr_txt15.setFixedSize(200, 20)
+        self.t2_lr_txt15.setFixedSize(200, 22)
         self.t2_lr_txt15.setText(' Q') 
         self.t2_lr_txt15.setAlignment(Qt.AlignLeft)
         self.t2_lr_txt15.setStyleSheet('font-size: 12pt; font-family: Serif; \
@@ -351,7 +351,7 @@ class Tab2RegressionInterface(object):
         
         # kernel variance tau label
         self.t2_lr_txt16 = QLabel(self)
-        self.t2_lr_txt16.move(30, 462.5)
+        self.t2_lr_txt16.move(30, 463)
         self.t2_lr_txt16.setFixedSize(200, 25)
         self.t2_lr_txt16.setText(' τ') 
         self.t2_lr_txt16.setAlignment(Qt.AlignLeft)
@@ -360,8 +360,8 @@ class Tab2RegressionInterface(object):
         self.t2_lr_txt16.setHidden(True)
         
         # kernel variance tau edit
-        self.t2_lr_edt10 = QLineEdit(self)
-        self.t2_lr_edt10.move(155, 462.5)       
+        self.t2_lr_edt10 = QLineEdit(self) 
+        self.t2_lr_edt10.move(155, 463)
         self.t2_lr_edt10.resize(70, 25)                                           
         self.t2_lr_edt10.setAlignment(Qt.AlignCenter)     
         self.t2_lr_edt10.setStyleSheet('background-color: rgb(255, 255, 255); \
@@ -392,7 +392,7 @@ class Tab2RegressionInterface(object):
         
         # thinning frequency label
         self.t2_lr_txt18 = QLabel(self)
-        self.t2_lr_txt18.move(30, 532.5)
+        self.t2_lr_txt18.move(30, 533)
         self.t2_lr_txt18.setFixedSize(250, 25)
         self.t2_lr_txt18.setText(' frequency') 
         self.t2_lr_txt18.setAlignment(Qt.AlignLeft)
@@ -401,8 +401,8 @@ class Tab2RegressionInterface(object):
         self.t2_lr_txt18.setHidden(True)
         
         # thinning frequency edit
-        self.t2_lr_edt11 = QLineEdit(self)
-        self.t2_lr_edt11.move(155, 527.5)       
+        self.t2_lr_edt11 = QLineEdit(self) 
+        self.t2_lr_edt11.move(155, 528)   
         self.t2_lr_edt11.resize(70, 25)                                           
         self.t2_lr_edt11.setAlignment(Qt.AlignCenter)     
         self.t2_lr_edt11.setStyleSheet('background-color: rgb(255, 255, 255); \
@@ -434,8 +434,8 @@ class Tab2RegressionInterface(object):
         
         # autocorrelation label
         self.t2_lr_txt20 = QLabel(self)
-        self.t2_lr_txt20.move(275, 367.5)
-        self.t2_lr_txt20.setFixedSize(200, 20)
+        self.t2_lr_txt20.move(275, 368)
+        self.t2_lr_txt20.setFixedSize(200, 22)
         self.t2_lr_txt20.setText(' Autocorrelated') 
         self.t2_lr_txt20.setAlignment(Qt.AlignLeft)
         self.t2_lr_txt20.setStyleSheet('font-size: 14pt; font-family: Serif; \
@@ -445,8 +445,8 @@ class Tab2RegressionInterface(object):
         
         # autocorrelation order q label
         self.t2_lr_txt21 = QLabel(self)
-        self.t2_lr_txt21.move(275, 402.5)
-        self.t2_lr_txt21.setFixedSize(200, 20)
+        self.t2_lr_txt21.move(275, 403)
+        self.t2_lr_txt21.setFixedSize(200, 22)
         self.t2_lr_txt21.setText(' q') 
         self.t2_lr_txt21.setAlignment(Qt.AlignLeft)
         self.t2_lr_txt21.setStyleSheet('font-size: 12pt; font-family: Serif; \
@@ -454,8 +454,8 @@ class Tab2RegressionInterface(object):
         self.t2_lr_txt21.setHidden(True)
         
         # autocorrelation order q edit
-        self.t2_lr_edt13 = QLineEdit(self)
-        self.t2_lr_edt13.move(400, 397.5)       
+        self.t2_lr_edt13 = QLineEdit(self)     
+        self.t2_lr_edt13.move(400, 398)  
         self.t2_lr_edt13.resize(70, 25)                                           
         self.t2_lr_edt13.setAlignment(Qt.AlignCenter)     
         self.t2_lr_edt13.setStyleSheet('background-color: rgb(255, 255, 255); \
@@ -467,7 +467,7 @@ class Tab2RegressionInterface(object):
         # autocorrelation mean p label
         self.t2_lr_txt22 = QLabel(self)
         self.t2_lr_txt22.move(275, 435)
-        self.t2_lr_txt22.setFixedSize(200, 20)
+        self.t2_lr_txt22.setFixedSize(200, 22)
         self.t2_lr_txt22.setText(' p') 
         self.t2_lr_txt22.setAlignment(Qt.AlignLeft)
         self.t2_lr_txt22.setStyleSheet('font-size: 12pt; font-family: Serif; \
@@ -487,7 +487,7 @@ class Tab2RegressionInterface(object):
         
         # autocorrelation variance H label
         self.t2_lr_txt23 = QLabel(self)
-        self.t2_lr_txt23.move(275, 467.5)
+        self.t2_lr_txt23.move(275, 468)
         self.t2_lr_txt23.setFixedSize(200, 20)
         self.t2_lr_txt23.setText(' H') 
         self.t2_lr_txt23.setAlignment(Qt.AlignLeft)
@@ -496,8 +496,8 @@ class Tab2RegressionInterface(object):
         self.t2_lr_txt23.setHidden(True)
         
         # autocorrelation variance H edit
-        self.t2_lr_edt15 = QLineEdit(self)
-        self.t2_lr_edt15.move(400, 462.5)       
+        self.t2_lr_edt15 = QLineEdit(self)   
+        self.t2_lr_edt15.move(400, 463)   
         self.t2_lr_edt15.resize(70, 25)                                           
         self.t2_lr_edt15.setAlignment(Qt.AlignCenter)     
         self.t2_lr_edt15.setStyleSheet('background-color: rgb(255, 255, 255); \
@@ -753,7 +753,7 @@ class Tab2RegressionInterface(object):
         # marginal likelihood label
         self.t2_lr_txt36 = QLabel(self)
         self.t2_lr_txt36.move(520, 470)
-        self.t2_lr_txt36.setFixedSize(300, 20)
+        self.t2_lr_txt36.setFixedSize(300, 22)
         self.t2_lr_txt36.setText(' marginal likelihood') 
         self.t2_lr_txt36.setAlignment(Qt.AlignLeft)
         self.t2_lr_txt36.setStyleSheet('font-size: 12pt; font-family: Serif; \
@@ -773,7 +773,7 @@ class Tab2RegressionInterface(object):
         # optimization label
         self.t2_lr_txt37 = QLabel(self)
         self.t2_lr_txt37.move(520, 510)
-        self.t2_lr_txt37.setFixedSize(300, 20)
+        self.t2_lr_txt37.setFixedSize(300, 22)
         self.t2_lr_txt37.setText(' hyperparameter optimization') 
         self.t2_lr_txt37.setAlignment(Qt.AlignLeft)
         self.t2_lr_txt37.setStyleSheet('font-size: 12pt; font-family: Serif; \
@@ -793,7 +793,7 @@ class Tab2RegressionInterface(object):
         # optimization type label
         self.t2_lr_txt38 = QLabel(self)
         self.t2_lr_txt38.move(520, 550)
-        self.t2_lr_txt38.setFixedSize(300, 20)
+        self.t2_lr_txt38.setFixedSize(300, 22)
         self.t2_lr_txt38.setText(' optimization type') 
         self.t2_lr_txt38.setAlignment(Qt.AlignLeft)
         self.t2_lr_txt38.setStyleSheet('font-size: 12pt; font-family: Serif; \
