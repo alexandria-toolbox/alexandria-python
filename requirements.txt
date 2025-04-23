@@ -1,6 +1,6 @@
 matplotlib==3.10.0
 numpy==1.26.4
 pandas==2.2.3
-PyQt5 = 5.15.10
+PyQt5==5.15.10
 python>=3.12.7
 scipy==1.13.1
