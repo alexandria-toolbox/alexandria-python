@@ -1823,7 +1823,7 @@ def check_irf_magnitude(indices, coefficients, irf, Q):
     """    
 
     for i in range(len(indices)):
-        irf_values = np.abs(irf[indices[i,0],:,indices[i,2]] @ Q[:,indices[i,[1,2]]])
+        irf_values = np.abs(irf[indices[i,0],:,indices[i,3]] @ Q[:,indices[i,[1,2]]])
         restriction = np.sum(irf_values * coefficients[i,:])
         if restriction < 0:
             restriction_satisfied = False
