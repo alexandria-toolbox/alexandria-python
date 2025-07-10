@@ -570,6 +570,7 @@ class IndependentBayesianVar(VectorAutoRegression,BayesianVar):
 
         # set initial value for inverse of Sigma: use S for simplicity
         inv_Sigma = np.diag(1 / S)
+        S = np.diag(S)
         
         # iterate over iterations
         iteration = 0
