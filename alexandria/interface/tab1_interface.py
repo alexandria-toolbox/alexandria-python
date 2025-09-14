@@ -45,7 +45,7 @@ class Tab1Interface(object):
         self.t1_txt3 = QLabel(self)
         self.t1_txt3.move(15, 130)
         self.t1_txt3.setFixedSize(600, 30)
-        self.t1_txt3.setText(' V 1.0 - Python edition') 
+        self.t1_txt3.setText(' V 3.0 - Python edition') 
         self.t1_txt3.setAlignment(Qt.AlignLeft)
         self.t1_txt3.setStyleSheet('font-size: 16pt; font-family: Serif; \
                 font-weight: bold; background-color: rgb' + str(self.background_color))
@@ -91,6 +91,7 @@ class Tab1Interface(object):
         self.t1_mnu1.setStyleSheet('QListView{background-color: white}')
         self.t1_mnu1.addItem('1. linear regression', 1)
         self.t1_mnu1.addItem('2. vector autoregression', 2)
+        self.t1_mnu1.addItem('3. vec/varma', 3)
         self.t1_mnu1.setCurrentIndex(self.user_inputs['tab_1']['model'] - 1)
         self.t1_mnu1.activated.connect(self.cb_t1_mnu1)
         

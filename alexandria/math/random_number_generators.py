@@ -55,7 +55,7 @@ def multivariate_normal(mu, Sigma):
     x : ndarray of shape (n,)
         pseudo-random number from the multivariate normal distribution
     """
-    
+
     x = mu + la.cholesky_nspd(Sigma) @ nrd.randn(Sigma.shape[0])
     return x
 
@@ -484,6 +484,28 @@ def bernoulli(p):
     
     x = int(nrd.rand() <= p)
     return x  
+
+
+def multivariate_bernoulli(p, n):
+    
+    """
+    multivariate_bernoulli(p, n)
+    random number generator for a vector of Bernoulli distributions
+    based on algorithm d.2
+    
+    parameters:
+    p : ndarray of shape (n,)
+        probabilities of success (0 <= p <= 1)
+    n : int 
+        dimension of Bernoulli vector     
+    
+    returns:
+    x : ndarray of shape (n,)
+        pseudo-random numbers from the Bernoulli distribution
+    """
+    
+    x = (nrd.rand(n) < p).astype(int)
+    return x
 
 
 def binomial(n, p):

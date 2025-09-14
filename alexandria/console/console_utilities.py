@@ -237,7 +237,7 @@ def alexandria_header():
     header.append('     /_/ /_/ /_/  \___/  /_/\_\ \__,_/ /_/ /_/ \____/ /_/   /_/  \__,_/        ')
     header.append('                                                                               ')
     header.append('     The library of Bayesian time-series models                                ')
-    header.append('     V 1.0 - Copyright Ⓒ  Romain Legrand                                      ')       
+    header.append('     V 2.0 - Copyright Ⓒ  Romain Legrand                                      ')       
     header.append('   ========================================================================    ')
     header.append('                                                                               ')        
     header.append('                                                                               ')     
@@ -624,8 +624,8 @@ def variance_covariance_summary(Sigma, n, endogenous_variables, tag):
         current_line = '  ⋮               ⋮          ⋮          ⋮          ⋮          ⋮          ⋮   ⋱  '
         lines.append(current_line)
         lines.append(' ' * 80)
-        current_line = 'output is too long, use ' + tag + ' to obtain full view'
-        lines.append(string_line(current_line))
+        lines.append(string_line('output is too long'))
+        lines.append(string_line('use ' + tag + ' to obtain full view'))
     return lines
      
             
@@ -711,8 +711,8 @@ def forecast_evaluation_summary(log_score, joint_log_score, endogenous_variables
         lines.append(line)
     if dimension == 6:
         lines.append(' ' * 80)
-        current_line = 'output is too long, use ' + tag + ' to obtain full view'
-        lines.append(string_line(current_line))   
+        lines.append(string_line('output is too long'))
+        lines.append(string_line('use ' + tag + ' to obtain full view'))  
     return lines
 
 
@@ -788,7 +788,7 @@ def string_line(string):
     """      
     
     # left-justify the name, with pad to reach 80 characters
-    line = '{:80}'.format(string)
+    line = '{:80}'.format(string)[:80]
     return line
     
 

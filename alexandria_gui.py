@@ -49,3 +49,17 @@ if model == 1:
 elif model == 2:
     from alexandria.vector_autoregression.main import vector_autoregression_main_code
     var = vector_autoregression_main_code(user_inputs)
+
+# else, if model is vec/varma, import main code for vector autoregression extension, run it, and return model
+elif model == 3:
+    from alexandria.vec_varma.main import vec_varma_main_code
+    model = vec_varma_main_code(user_inputs)
+
+
+
+
+
+
+
+
+

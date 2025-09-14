@@ -4,6 +4,7 @@ import alexandria.processor.input_utilities as iu
 import alexandria.math.linear_algebra as la
 import alexandria.math.random_number_generators as rng
 import alexandria.vector_autoregression.var_utilities as vu
+import alexandria.vec_varma.vec_varma_utilities as vvu
 import alexandria.console.console_utilities as cu
 from alexandria.vector_autoregression.maximum_likelihood_var import MaximumLikelihoodVar
 from alexandria.state_space.bayesian_state_space_sampler import BayesianStateSpaceSampler
@@ -453,14 +454,19 @@ class BayesianVar(object):
 
 
     def __steady_state(self):
-        
-        ss = np.zeros((self.T,self.n,self.iterations))
-        for i in range(self.iterations):
-            ss[:,:,i] = vu.steady_state(self.Z, self.mcmc_beta[:,:,i], self.n, self.m, self.p, self.T)
-            if self.verbose:
-                cu.progress_bar(i, self.iterations, 'Steady-state:')            
-        ss_estimates = vu.posterior_estimates(ss, self.credibility_level)
-        self.steady_state_estimates = ss_estimates
+
+        # if model is VEC, steady-state cannot be defined from VAR
+        if self.__class__.__name__ == 'VectorErrorCorrection':
+            self.steady_state_estimates = vvu.vec_steady_state(self.Y, self.n, self.T)
+        # if model is BVAR, use regular steady-state computation
+        else:         
+            ss = np.zeros((self.T,self.n,self.iterations))
+            for i in range(self.iterations):
+                ss[:,:,i] = vu.steady_state(self.Z, self.mcmc_beta[:,:,i], self.n, self.m, self.p, self.T)
+                if self.verbose:
+                    cu.progress_bar(i, self.iterations, 'Steady-state:')            
+            ss_estimates = vu.posterior_estimates(ss, self.credibility_level)
+            self.steady_state_estimates = ss_estimates
         
         
     def __fitted_and_residual(self):

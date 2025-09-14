@@ -260,7 +260,93 @@ if user_inputs['tab_1']['model'] == 2:
     # name of long-run prior file, as string (e.g. 'long_run.csv')
     user_inputs['tab_2_var']['long_run_file'] = ''
     
+
+#---------------------------------------------------
+# Editable part: tab 2, VEC/VARMA
+#--------------------------------------------------- 
+
+
+# this applies only if the selected model is VEC/VARMA (model = 3)
+if user_inputs['tab_1']['model'] == 3:
     
+    # choice of model (1: Bayesian Vector Error Correction; 
+    # 2: Bayesian Vector Autoregressive Moving Average)
+    user_inputs['tab_2_ext']['model'] = 1
+    
+    # post-burn iterations for MCMC algorithm (integer)
+    user_inputs['tab_2_ext']['iterations'] = 2000
+    
+    # burnin iterations for MCMC algorithm (integer)
+    user_inputs['tab_2_ext']['burnin'] = 1000
+    
+    # credibility level for model estimates (float between 0 and 1)
+    user_inputs['tab_2_ext']['model_credibility'] = 0.95    
+    
+    # include constant in vector autoregression (True: yes, False: no)
+    user_inputs['tab_2_ext']['constant'] = True
+    
+    # include trend in vector autoregression (True: yes, False: no)
+    user_inputs['tab_2_ext']['trend'] = False
+    
+    # include quadratic trend in regression (True: yes, False: no)
+    user_inputs['tab_2_ext']['quadratic_trend'] = False      
+    
+    # endogenous lags to include in vector error correction
+    user_inputs['tab_2_ext']['vec_lags'] = 4    
+    
+    # vec: overall tightness coefficient pi1 (positive float)
+    user_inputs['tab_2_ext']['vec_pi1'] = 0.1
+    
+    # vec: cross-variable shrinkage coefficient pi2 (positive float)
+    user_inputs['tab_2_ext']['vec_pi2'] = 0.5
+    
+    # vec: lag decay coefficient pi3 (positive float)
+    user_inputs['tab_2_ext']['vec_pi3'] = 1
+    
+    # vec: exogenous slackness coefficient pi4 (positive float)
+    user_inputs['tab_2_ext']['vec_pi4'] = 100    
+    
+    # choice of prior (1: uninformative; 2: horseshoe; 3: selection)
+    user_inputs['tab_2_ext']['prior_type'] = 1      
+
+    # choice of error correction type (1: general; 2: reduced-rank)
+    user_inputs['tab_2_ext']['error_correction_type'] = 1     
+
+    # maximum cointegration rank r (integer between 1 and n)
+    user_inputs['tab_2_ext']['max_cointegration_rank'] = 1
+
+    # endogenous lags to include in vector autoregressive moving average
+    user_inputs['tab_2_ext']['varma_lags'] = 4
+    
+    # varma: prior autoregressive coefficients: either scalar for common value (e.g. 0.9),
+    # or list of values, one for each AR coefficient (e.g. [0.9, 0.8, 0.75])
+    user_inputs['tab_2_ext']['ar_coefficients'] = 0.9    
+    
+    # varma: overall tightness coefficient pi1 (positive float)
+    user_inputs['tab_2_ext']['varma_pi1'] = 0.1
+    
+    # varma: cross-variable shrinkage coefficient pi2 (positive float)
+    user_inputs['tab_2_ext']['varma_pi2'] = 0.5
+    
+    # varma: lag decay coefficient pi3 (positive float)
+    user_inputs['tab_2_ext']['varma_pi3'] = 1
+    
+    # varma: exogenous slackness coefficient pi4 (positive float)
+    user_inputs['tab_2_ext']['varma_pi4'] = 100     
+    
+    # residual lags to include in vector autoregressive moving average
+    user_inputs['tab_2_ext']['residual_lags'] = 1
+    
+    # varma: overall tightness coefficient lambda1 (positive float)    
+    user_inputs['tab_2_ext']['lambda1'] = 0.1
+    
+    # varma: cross-variable shrinkage coefficient lambda2 (positive float)    
+    user_inputs['tab_2_ext']['lambda2'] = 0.5
+    
+    # varma: lag decay coefficient lambda3 (positive float)    
+    user_inputs['tab_2_ext']['lambda3'] = 1    
+
+
 #---------------------------------------------------
 # Editable part: tab 3
 #--------------------------------------------------- 
@@ -335,4 +421,8 @@ elif model == 2:
     from alexandria.vector_autoregression.main import vector_autoregression_main_code
     var = vector_autoregression_main_code(user_inputs)
 
+# else, if model is vec/varma, import main code for vector autoregression extension, run it, and return model
+elif model == 3:
+    from alexandria.vec_varma.main import vec_varma_main_code
+    model = vec_varma_main_code(user_inputs)
 

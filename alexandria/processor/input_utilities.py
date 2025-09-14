@@ -1011,7 +1011,7 @@ def check_restriction_table(data, raw_dates, endogenous_variables, proxy_variabl
         if len(np.nonzero(data.iloc[i,3:].values)) not in [1,2]:
             raise TypeError('Data error for file '  + file + '. Ill-defined restrictions in row ' + str(i+1) + ', shock columns must contain either 1 or 2 non-zero coefficients.')
         if restriction_type == 'covariance' and var_type != 7:
-            raise TypeError('Data error for file '  + file + '. Covariance restriction found in row ' + str(i+1) + ', but VAR type is not proxy-SVAR.')
+            raise TypeError('Data error for file '  + file + '. Covariance restriction found in row ' + str(i+1) + ', but model is not proxy-SVAR.')
         elif restriction_type == 'covariance' and var_type == 7:
             for j in range(number_endogenous-number_proxys):
                 shock = data.iloc[i,3+j]
@@ -1083,7 +1083,7 @@ def identify_model(model):
     model_type : int
         specific model type (maximum likelihood regression, simple Bayesian regression, ...)
     """
-    
+
     class_name = model.__class__.__name__
     if class_name == 'MaximumLikelihoodRegression':
         model_name = 'Maximum Likelihood Regression'
@@ -1136,7 +1136,15 @@ def identify_model(model):
     elif class_name == 'BayesianProxySvar':
         model_name = 'Bayesian Proxy Svar'
         model_class = 2
-        model_type = 7                 
+        model_type = 7       
+    elif class_name == 'VectorErrorCorrection':
+        model_name = 'Bayesian Vector Error Correction'
+        model_class = 3
+        model_type = 1 
+    elif class_name == 'VectorAutoregressiveMovingAverage':
+        model_name = 'Bayesian Vector Autoregressive Moving Average'
+        model_class = 3
+        model_type = 2
     return model_name, model_class, model_type
 
 

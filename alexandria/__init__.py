@@ -11,6 +11,8 @@ from .vector_autoregression.independent_bayesian_var import IndependentBayesianV
 from .vector_autoregression.dummy_observation_bayesian_var import DummyObservationBayesianVar
 from .vector_autoregression.large_bayesian_var import LargeBayesianVar
 from .vector_autoregression.bayesian_proxy_svar import BayesianProxySvar
+from .vec_varma.vector_error_correction import VectorErrorCorrection
+from .vec_varma.vector_autoregressive_moving_average import VectorAutoregressiveMovingAverage
 from .interface.graphical_user_interface import GraphicalUserInterface
 from .state_space.bayesian_state_space_sampler import BayesianStateSpaceSampler
 from .datasets.data_sets import DataSets

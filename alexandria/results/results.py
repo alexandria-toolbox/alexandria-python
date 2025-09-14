@@ -2,12 +2,13 @@
 from datetime import datetime
 from alexandria.results.regression_results import RegressionResults
 from alexandria.results.vector_autoregression_results import VectorAutoregressionResults
+from alexandria.results.vec_varma_results import VecVarmaResults
 import alexandria.console.console_utilities as cu
 import alexandria.processor.input_utilities as iu
 from os.path import join
 
 
-class Results(RegressionResults, VectorAutoregressionResults):
+class Results(RegressionResults, VectorAutoregressionResults, VecVarmaResults):
     
     
     #---------------------------------------------------
@@ -59,11 +60,14 @@ class Results(RegressionResults, VectorAutoregressionResults):
         # if model is vector autoregression, make VAR summary
         elif model_class == 2:
             self._make_var_summary() 
+        # if model is VEC/VARMA, make VAR extension summary
+        elif model_class == 3:
+            self._make_vec_varma_summary() 
             
         
     def show_estimation_summary(self):
         # display estimation summary in console
-        cu.print_string_list(self.estimation_summary)        
+        cu.print_string_list(self.estimation_summary)     
         
         
     def save_estimation_summary(self, path):
@@ -87,6 +91,9 @@ class Results(RegressionResults, VectorAutoregressionResults):
         # if model is vector autoregression, make VAR summary
         elif model_class == 2:
             self._make_var_application_summary()  
+        # if model is VEC/VARMA, make VAR extension summary
+        elif model_class == 3:
+            self._make_vec_varma_application_summary() 
             
         
     def save_application_summary(self, path):
@@ -100,7 +107,10 @@ class Results(RegressionResults, VectorAutoregressionResults):
         # if model is vector autoregression, save regression summary
         elif model_class == 2:
             self._save_var_application(path)          
-        
+        # if model is VEC/VARMA, save VAR extension summary
+        elif model_class == 3:
+            self._save_vec_varma_application(path)  
+            
     
     #---------------------------------------------------
     # Methods (Access = private)
@@ -116,6 +126,9 @@ class Results(RegressionResults, VectorAutoregressionResults):
         # if model is vector autoregression, add VAR elements
         elif self.complementary_information['model_class'] == 2:
             self._complete_var_information()
+        # if model is VEC/VARMA, add extension elements
+        elif self.complementary_information['model_class'] == 3:
+            self._complete_vec_varma_information()            
         # add application information
         self.__complete_application_information()
 
@@ -209,6 +222,8 @@ class Results(RegressionResults, VectorAutoregressionResults):
             model = 'linear regression'
         elif model_class == 2:
             model = 'vector autoregression'    
+        elif model_class == 3:
+            model = 'vec / varma'    
         lines.append('selected model: ' + model)
         # endogenous variables
         endogenous_variables = iu.list_to_string(self.complementary_information['endogenous_variables'])
@@ -256,6 +271,8 @@ class Results(RegressionResults, VectorAutoregressionResults):
             self._add_regression_tab_2_inputs()
         elif self.complementary_information['model_class'] == 2:
             self._add_var_tab_2_inputs()
+        elif self.complementary_information['model_class'] == 3:
+            self._add_vec_varma_tab_2_inputs()
             
 
     def __add_tab_3_inputs(self):
@@ -264,5 +281,6 @@ class Results(RegressionResults, VectorAutoregressionResults):
             self._add_regression_tab_3_inputs()
         elif self.complementary_information['model_class'] == 2:
             self._add_var_tab_3_inputs()
-            
+        elif self.complementary_information['model_class'] == 3:
+            self._add_vec_varma_tab_3_inputs()            
 

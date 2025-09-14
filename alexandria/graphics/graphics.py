@@ -28,12 +28,13 @@ class Graphics(RegressionGraphics, VectorAutoregressionGraphics):
         
         
     def insample_fit_graphics(self, show, save):
+        model_class = self.complementary_information['model_class']
         # if model is linear regression, make regression insample graphics
-        if self.complementary_information['model_class'] == 1:
+        if model_class == 1:
             self._regression_fitted(show, save)
             self._regression_residuals(show, save)
         # if model is vector autoregression, make VAR insample graphics
-        elif self.complementary_information['model_class'] == 2:
+        elif model_class == 2 or model_class == 3:
             self._var_fitted(show, save)
             self._var_residuals(show, save)
             self._var_shocks(show, save)
@@ -41,35 +42,40 @@ class Graphics(RegressionGraphics, VectorAutoregressionGraphics):
             
         
     def forecast_graphics(self, show, save):
+        model_class = self.complementary_information['model_class']
         # if model is linear regression, make regression forecast graphics
-        if self.complementary_information['model_class'] == 1:
+        if model_class == 1:
             self._regression_forecasts(show, save)
         # if model is vector autoregression, make VAR forecast graphics
-        elif self.complementary_information['model_class'] == 2:
+        elif model_class == 2 or model_class == 3:
             self._var_forecasts(show, save)
 
 
     def conditional_forecast_graphics(self, show, save):
+        model_class = self.complementary_information['model_class']
         # if model is vector autoregression, make VAR forecast graphics
-        if self.complementary_information['model_class'] == 2:
+        if model_class == 2 or model_class == 3:
             self._var_conditional_forecasts(show, save)
             
 
     def irf_graphics(self, show, save):
+        model_class = self.complementary_information['model_class']
         # if model is vector autoregression, make VAR IRF graphics
-        if self.complementary_information['model_class'] == 2:
+        if model_class == 2 or model_class == 3:
             self._var_irf(show, save)        
 
 
     def fevd_graphics(self, show, save):
+        model_class = self.complementary_information['model_class']
         # if model is vector autoregression, make VAR FEVD graphics
-        if self.complementary_information['model_class'] == 2:
+        if model_class == 2 or model_class == 3:
             self._var_fevd(show, save) 
 
 
     def hd_graphics(self, show, save):
+        model_class = self.complementary_information['model_class']
         # if model is vector autoregression, make VAR HD graphics
-        if self.complementary_information['model_class'] == 2:
+        if model_class == 2 or model_class == 3:
             self._var_hd(show, save) 
 
 
@@ -96,10 +102,13 @@ class Graphics(RegressionGraphics, VectorAutoregressionGraphics):
         # if model is linear regression, add regression elements
         if self.complementary_information['model_class'] == 1:
             self._complete_regression_information()        
-        # if model is vecto autoregression, add var elements
+        # if model is vector autoregression, add var elements
         elif self.complementary_information['model_class'] == 2:
             self._complete_var_information() 
-                
+        # if model is VEC/VARMA, add var elements (vec and varma just recycle VAR functions)
+        elif self.complementary_information['model_class'] == 3:
+            self._complete_var_information() 
+
 
     def __complete_model_information(self):
         # recover and add common model elements

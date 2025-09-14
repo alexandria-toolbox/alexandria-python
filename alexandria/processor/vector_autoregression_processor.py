@@ -83,7 +83,6 @@ class VectorAutoregressionProcessor(object):
         # print loading message
         if self.progress_bar:
             cu.print_message_to_overwrite('Data loading:')
-            # cu.print_message('Data loading:')
         # recover in-sample endogenous and exogenous
         self.var_endogenous, self.var_exogenous, self.var_dates = self.__get_var_insample_data()
         # recover proxy variables

@@ -1,10 +1,11 @@
 # import
 from alexandria.processor.regression_processor import RegressionProcessor
 from alexandria.processor.vector_autoregression_processor import VectorAutoregressionProcessor
+from alexandria.processor.vec_varma_processor import VecVarmaProcessor
 import alexandria.processor.input_utilities as iu
 
 
-class InputProcessor(RegressionProcessor, VectorAutoregressionProcessor):
+class InputProcessor(RegressionProcessor, VectorAutoregressionProcessor, VecVarmaProcessor):
 
 
     #---------------------------------------------------
@@ -46,6 +47,9 @@ class InputProcessor(RegressionProcessor, VectorAutoregressionProcessor):
         # if model is model 2, additionally make information for VAR models
         elif self.model == 2:
             self._make_var_information()
+        # if model is model 3, additionally make information for VEC/VARMA models
+        elif self.model == 3:
+            self._make_vec_varma_information()            
         # finally add complementary information for applications
         self.__make_application_information()
             
@@ -66,6 +70,9 @@ class InputProcessor(RegressionProcessor, VectorAutoregressionProcessor):
         # if model is model 2, additionally make information for vector autoregression
         elif self.model == 2:
             self._make_var_graphics_information()
+        # if model is model 3, additionally make information for VEC/VARMA
+        elif self.model == 3:
+            self._make_vec_varma_graphics_information()
             
 
     #---------------------------------------------------
@@ -103,7 +110,10 @@ class InputProcessor(RegressionProcessor, VectorAutoregressionProcessor):
         # if model is model 2, get user inputs for vector autoregression
         elif self.model ==2:
             self._vector_autoregression_inputs()
-    
+        # if model is model 3, get user inputs for vec/varma
+        elif self.model ==3:
+            self._vec_varma_inputs()
+            
         
     def __tab_3_inputs(self):
         # recover forecast decision
@@ -151,12 +161,15 @@ class InputProcessor(RegressionProcessor, VectorAutoregressionProcessor):
         # else, if model is model 2, get data for vector autoregression
         elif self.model == 2:
             self._vector_autoregression_data()
-        
+        # else, if model is model 3, get data for vec/varma
+        elif self.model == 3:
+            self._vec_varma_data()
+            
              
     def __get_model(self):
         model = self.user_inputs['tab_1']['model']
-        if model not in [1,2]:
-            raise TypeError('Value error for model. Should be 1 or 2.')
+        if model not in [1,2,3]:
+            raise TypeError('Value error for model. Should be 1, 2 or 3.')
         return model
         
     
@@ -412,9 +425,9 @@ class InputProcessor(RegressionProcessor, VectorAutoregressionProcessor):
         structural_identification = self.user_inputs['tab_3']['structural_identification']
         if structural_identification not in [1, 2, 3, 4]:
             raise TypeError('Value error for structural identification. Should be 1, 2, 3 or 4.')
-        if self.user_inputs['tab_2_var']['var_type'] == 1 and structural_identification not in [1, 2, 3]:
+        if self.model == 2 and self.user_inputs['tab_2_var']['var_type'] == 1 and structural_identification not in [1, 2, 3]:
             raise TypeError('Value error for structural identification. Identification by restriction is not available for maximum likelihood VAR.')            
-        if self.user_inputs['tab_2_var']['var_type'] == 7 and structural_identification not in [1, 4]:
+        if self.model == 2 and self.user_inputs['tab_2_var']['var_type'] == 7 and structural_identification not in [1, 4]:
             raise TypeError('Value error for structural identification. Should be 1 (none) or 4 (restrictions) when selecting a proxy SVAR.')
         return structural_identification
     

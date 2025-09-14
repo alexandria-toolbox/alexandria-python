@@ -94,6 +94,45 @@ class DataSets(object):
         return data
     
 
+    def load_fdi_table(self):
+        
+        """
+        load_fdi_table()
+        load the India FDI dataset as a Pandas dataframe
+        
+        parameters:
+        none
+        
+        returns:
+        data : Pandas dataframe
+            dataframe containing the FDI dataset
+        """
+            
+        file_path = self.__get_file_path('fdi')
+        data = pd.read_csv(file_path, delimiter = ',', index_col = 0)
+        data.index = pd.to_datetime(data.index)
+        return data
+        
+    
+    def load_fdi(self):
+        
+        """
+        load_fdi()
+        load the raw India FDI dataset as a Numpy ndarray
+        
+        parameters:
+        none
+        
+        returns:
+        data : Numpy ndarray
+            array containing the raw data for the FDI dataset
+        """
+        
+        dataframe = self.load_fdi_table()
+        data = dataframe.values
+        return data
+
+
     #---------------------------------------------------
     # Methods (Access = private)
     #--------------------------------------------------- 

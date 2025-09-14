@@ -390,7 +390,6 @@ def make_crps(y, y_hat):
     return crps
 
 
-
 def sums_of_coefficients_extension(sums_of_coefficients, pi5, Y, n, m, p):
 
     """
@@ -556,7 +555,7 @@ def make_V(s, pi1, pi2, pi3, pi4, n, m, p):
     V : ndarray of shape (q,)
         prior variance (diagonal term only) for beta    
     """      
-    
+
     scale = np.vstack((np.tile(s,[m,1]), np.tile(np.tile(s,[n,1]) / np.tile(s.reshape(-1,1),[1,n]), [p,1])))
     shrinkage = (pi1 * np.vstack((pi4 * np.ones((m,n)), np.kron(1 / (np.arange(p) + 1) \
                 .reshape(-1,1) ** pi3, pi2 * np.ones((n,n)) + (1 - pi2) * np.eye(n)) ))) ** 2
