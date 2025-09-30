@@ -726,7 +726,7 @@ class Tab2VecVarmaInterface(object):
         self.t2_ext_edt19.textChanged.connect(self.cb_t2_ext_edt19)
         self.t2_ext_edt19.setHidden(True) 
     
-        # indicate that tab 2 for vector autoregression is now created
+        # indicate that tab 2 for vec/varma is now created
         self.created_tab_2_ext = True    
        
     

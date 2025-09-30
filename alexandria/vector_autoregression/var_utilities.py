@@ -1757,8 +1757,9 @@ def make_restriction_shocks(mcmc_beta, mcmc_chol_Sigma, Y, X, T, n, iterations, 
     mcmc_shocks : ndarray of shape (T, n, iterations)
         matrix of mcmc values for preliminary structural shocks
     """
-    
-    if len(restriction_matrices[3]) == 0 and len(restriction_matrices[4]) == 0:
+
+    if len(restriction_matrices[3][0]) == 0 and len(restriction_matrices[4][0]) == 0 \
+       and len(restriction_matrices[5][0]) == 0 and len(restriction_matrices[6][0]) == 0:
         mcmc_shocks = []
     else:
         mcmc_shocks = np.zeros((T, n, iterations))
