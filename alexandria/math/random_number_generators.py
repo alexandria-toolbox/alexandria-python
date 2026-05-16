@@ -141,7 +141,7 @@ def gamma(a, b):
     
     x = rd.gammavariate(a, b)
     return x
-    
+
       
 def inverse_gamma(a, b):
     
@@ -380,7 +380,158 @@ def matrix_student(M, Sigma, Omega, nu):
     X = M + G @ Z @ H.T
     return X   
 
+
+def standard_truncated_normal(a, b):
     
+    """
+    standard_truncated_normal(a, b)
+    random number generator for the standard truncated normal distribution
+    based on algorithm d.22
+    
+    parameters:
+    a : float
+        lower bound of truncation
+    b : float
+        upper bound of truncation (b > a)
+    
+    returns:
+    x : float
+        pseudo-random number from the standard truncated normal distribution
+    """    
+    
+    if a <= 0 and b >= 0:
+        if a < -10 and b > 10:
+            x = nrd.randn()
+        elif b > a + 2.50662:
+            x = tn_normal_rejection(a, b)
+        else:
+            x = tn_uniform_rejection(a, b)
+    else:
+        if a > 0:
+            lb = a
+            ub = b
+        elif b < 0:
+            lb = -b
+            ub = -a
+        a0 = 0.257
+        b1 = lb + 1.2533 * np.exp(0.5 * lb ** 2)
+        a1 = (lb ** 2 + 4) ** 0.5
+        b2 = lb + 2 / (lb + a1) * np.exp((lb ** 2 - lb * a1) / 4 + 0.5)
+        if lb < a0 and ub <= b1:
+            x = tn_uniform_rejection(lb, ub)
+        elif lb < a0 and ub > b1:
+            x = tn_half_normal_rejection(lb, ub)
+        elif lb >= a0 and ub <= b2:
+            x = tn_uniform_rejection(lb, ub)
+        elif lb >= a0 and ub > b2:
+            x = tn_translated_exponential(lb, ub)
+        if b < 0:
+            x *= -1
+    return x
+            
+        
+def tn_normal_rejection(a, b):
+    
+    """
+    tn_normal_rejection(a, b)
+    truncated standard normal distribution, using normal rejection sampling
+    
+    parameters:
+    a : float
+        lower bound of truncation
+    b : float
+        upper bound of truncation (b > a)
+    
+    returns:
+    x : float
+        pseudo-random number from the standard truncated normal distribution
+    """      
+    
+    while True:
+        x = nrd.randn()
+        if x >= a and x <= b:
+            return x
+        
+        
+def tn_uniform_rejection(a, b):
+    
+    """
+    tn_normal_rejection(a, b)
+    truncated standard normal distribution, using uniform rejection sampling
+    
+    parameters:
+    a : float
+        lower bound of truncation
+    b : float
+        upper bound of truncation (b > a)
+    
+    returns:
+    x : float
+        pseudo-random number from the standard truncated normal distribution
+    """       
+
+    if a <= 0 and b >= 0:
+        log_m = 0
+    elif a > 0:
+        log_m = -0.5 * a ** 2
+    elif b < 0:
+        log_m = -0.5 * b ** 2     
+    while True:   
+        x = nrd.uniform(a,b)
+        log_fx = -0.5 * x ** 2
+        log_u = np.log(nrd.rand())
+        if log_u <= log_fx - log_m:
+            return x
+                
+        
+def tn_half_normal_rejection(a, b): 
+
+    """
+    tn_normal_rejection(a, b)
+    truncated standard normal distribution, using half normal rejection sampling
+    
+    parameters:
+    a : float
+        lower bound of truncation
+    b : float
+        upper bound of truncation (b > a)
+    
+    returns:
+    x : float
+        pseudo-random number from the standard truncated normal distribution
+    """   
+       
+    while True:
+        x = np.abs(nrd.randn())
+        if x >= a and x <= b:
+            return x        
+        
+
+def tn_translated_exponential(a, b):   
+
+    """
+    tn_normal_rejection(a, b)
+    truncated standard normal distribution, using two sided translated exponential sampling
+    
+    parameters:
+    a : float
+        lower bound of truncation
+    b : float
+        upper bound of truncation (b > a)
+    
+    returns:
+    x : float
+        pseudo-random number from the standard truncated normal distribution
+    """   
+
+    while True:    
+        z = gamma(1,1/a)
+        x = z + a
+        log_u = np.log(nrd.rand())
+        if log_u <= (- z ** 2 / 2) and x <= b:
+            return x
+
+
 def truncated_normal(mu, sigma, a, b):
     
     """
@@ -402,27 +553,48 @@ def truncated_normal(mu, sigma, a, b):
     x : float
         pseudo-random number from the truncated normal distribution
     """
-    
-    def standard_truncated_normal(a, b):
-        while True:
-            x = a + (b - a) * nrd.rand()
-            if a <= 0 and b >= 0:
-                w = m.exp(- x * x / 2)
-            elif b < 0:
-                w = m.exp((b * b - x * x) / 2)
-            else:
-                w = m.exp((a * a - x * x) / 2)
-            u = nrd.rand()
-            if u <= w:
-                return  x
-            
+                
     standard_deviation = np.sqrt(sigma)
     a_bar = (a - mu) / standard_deviation
     b_bar = (b - mu) / standard_deviation
     z = standard_truncated_normal(a_bar, b_bar)
     x = mu + standard_deviation * z
     return x    
+
+
+def truncated_multivariate_normal(mu, Sigma, a, b):
     
+    """
+    truncated_multivariate_normal(mu, Sigma, a, b)
+    random number generator for the truncated multivariate normal distribution
+    based on algorithm d.34
+    
+    parameters:
+    mu: ndarray of shape (n,)
+        location vector
+    Sigma : ndarray of shape (n,n)
+        scale matrix
+    a : ndarray of shape (n,)
+        lower bound of truncation
+    b : ndarray of shape (n,)
+        upper bound of truncation 
+    
+    returns:
+    x : ndarray of shape (n,)
+        pseudo-random number from the truncated multivariate normal distribution
+    """    
+    
+    n = mu.shape[0]
+    G = la.cholesky_nspd(Sigma)
+    z = np.zeros(n)
+    for i in range(n):
+        s_i = G[i,:i] @ z[:i]
+        c_i = (a[i] - mu[i] - s_i) / G[i,i]
+        d_i = (b[i] - mu[i] - s_i) / G[i,i]
+        z[i] = standard_truncated_normal(c_i, d_i)
+    x = mu + G @ z
+    return x
+
     
 def beta(a, b):
     

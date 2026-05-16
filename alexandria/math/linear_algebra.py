@@ -259,7 +259,7 @@ def lag_matrix(X, lags):
     X_lagged : ndarray of shape (n-lags,k*lags) or (n-lags,lags)
         array containing lagged values
     """
-    
+
     # array of present values
     X_present = X[lags:].copy()
     # if X is 1-dimensional array, convert first to 2-d arrays
@@ -323,3 +323,57 @@ def nullspace(X):
     return null_space
 
 
+def dropna(x):
+    
+    """
+    drops NaN entries from numpy vector
+
+    parameters:
+    x : ndarray of shape (n,)
+        vector containing both numeric and NaN entries
+    
+    returns:
+    y : ndarray of shape (m,)
+        vector containing numeric entries only, with m<= n
+    """   
+
+    non_nan_entries = np.where(~np.isnan(x))[0]
+    y = x[non_nan_entries]
+    return y, non_nan_entries
+        
+    
+def robust_covariance_matrix(X):
+    
+    """
+    computes low-rank robust covariance matrix
+
+    parameters:
+    x : ndarray of shape (T,n)
+        matrix of regressors 
+    
+    returns:
+    inv_XX : ndarray of shape (n,n)
+        robust variance-covariance matrix
+    """     
+
+    n = X.shape[1]
+    XX = X.T @ X
+    X_rank = nla.matrix_rank(XX)
+    eigenvalues, eigenvectors = nla.eig(XX)
+    max_eigenvalue = np.max(np.real(eigenvalues))
+    min_eigenvalue = np.min(np.real(eigenvalues))
+    conditioning_ratio = np.abs(max_eigenvalue / min_eigenvalue)
+    if X_rank == n and conditioning_ratio < 1e7:
+        inv_XX = invert_spd_matrix(XX)
+    else:
+        lamda = max_eigenvalue * 1e-5
+        identity = np.eye(n)
+        identity[0,0] = 0
+        inv_XX_I = invert_spd_matrix(XX + lamda * identity)
+        inv_XX = inv_XX_I @ XX @ inv_XX_I
+    return inv_XX
+    
+
+    
+    
+    

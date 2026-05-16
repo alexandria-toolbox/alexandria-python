@@ -5,9 +5,10 @@ from shutil import rmtree
 import alexandria.processor.input_utilities as iu
 from alexandria.graphics.regression_graphics import RegressionGraphics
 from alexandria.graphics.vector_autoregression_graphics import VectorAutoregressionGraphics
+from alexandria.graphics.nowcasting_graphics import NowcastingGraphics
 
 
-class Graphics(RegressionGraphics, VectorAutoregressionGraphics):
+class Graphics(RegressionGraphics, VectorAutoregressionGraphics, NowcastingGraphics):
     
     
     #---------------------------------------------------
@@ -39,6 +40,13 @@ class Graphics(RegressionGraphics, VectorAutoregressionGraphics):
             self._var_residuals(show, save)
             self._var_shocks(show, save)
             self._var_steady_state(show, save)
+        # if model is nowcasting, make nowcasting insample graphics
+        elif model_class == 4:
+            self._nowcasting_fitted(show, save)
+            self._nowcasting_residuals(show, save)
+            self._nowcasting_shocks(show, save)
+            self._nowcasting_steady_state(show, save)
+            self._nowcasting_factors(show, save)
             
         
     def forecast_graphics(self, show, save):
@@ -49,13 +57,19 @@ class Graphics(RegressionGraphics, VectorAutoregressionGraphics):
         # if model is vector autoregression, make VAR forecast graphics
         elif model_class == 2 or model_class == 3:
             self._var_forecasts(show, save)
+        # if model is nowcasting, make nowcasting forecast graphics
+        elif model_class == 4:
+            self._nowcasting_forecasts(show, save)
 
 
     def conditional_forecast_graphics(self, show, save):
         model_class = self.complementary_information['model_class']
-        # if model is vector autoregression, make VAR forecast graphics
+        # if model is vector autoregression, make VAR conditional forecast graphics
         if model_class == 2 or model_class == 3:
             self._var_conditional_forecasts(show, save)
+        # if model is nowcasting, make nowcasting conditional forecast graphics
+        elif model_class == 4:
+            self._nowcasting_conditional_forecasts(show, save)
             
 
     def irf_graphics(self, show, save):
@@ -63,21 +77,30 @@ class Graphics(RegressionGraphics, VectorAutoregressionGraphics):
         # if model is vector autoregression, make VAR IRF graphics
         if model_class == 2 or model_class == 3:
             self._var_irf(show, save)        
-
+        # if model is nowcasting, make nowcasting IRF graphics
+        elif model_class == 4:
+            self._nowcasting_irf(show, save)
+            
 
     def fevd_graphics(self, show, save):
         model_class = self.complementary_information['model_class']
         # if model is vector autoregression, make VAR FEVD graphics
         if model_class == 2 or model_class == 3:
             self._var_fevd(show, save) 
-
+        # if model is nowcasting, make nowcasting IRF graphics
+        elif model_class == 4:
+            self._nowcasting_fevd(show, save)
+            
 
     def hd_graphics(self, show, save):
         model_class = self.complementary_information['model_class']
         # if model is vector autoregression, make VAR HD graphics
         if model_class == 2 or model_class == 3:
             self._var_hd(show, save) 
-
+        # if model is nowcasting, make nowcasting HD graphics
+        elif model_class == 4:
+            self._nowcasting_hd(show, save)
+            
 
     #---------------------------------------------------
     # Methods (Access = private)
@@ -108,7 +131,10 @@ class Graphics(RegressionGraphics, VectorAutoregressionGraphics):
         # if model is VEC/VARMA, add var elements (vec and varma just recycle VAR functions)
         elif self.complementary_information['model_class'] == 3:
             self._complete_var_information() 
-
+        # if model is nowcasting, add nowcasting elements
+        elif self.complementary_information['model_class'] == 4:
+            self._complete_nowcasting_information() 
+            
 
     def __complete_model_information(self):
         # recover and add common model elements

@@ -27,7 +27,7 @@ user_inputs['tab_3'] = {}
 #---------------------------------------------------  
 
 
-# model choice (1 = linear regression)
+# model choice (1 = linear regression, 2 = vector autoregression, 3 = varma/vec, 4 = nowcasting)
 user_inputs['tab_1']['model'] = 1
 
 # endogenous variables, as list of strings (e.g. ['var1', 'var2'])
@@ -193,7 +193,7 @@ if user_inputs['tab_1']['model'] == 2:
     # include trend in vector autoregression (True: yes, False: no)
     user_inputs['tab_2_var']['trend'] = False
     
-    # include quadratic trend in regression (True: yes, False: no)
+    # include quadratic trend in vector autoregression (True: yes, False: no)
     user_inputs['tab_2_var']['quadratic_trend'] = False  
     
     # endogenous lags to include in vector autoregression
@@ -288,7 +288,7 @@ if user_inputs['tab_1']['model'] == 3:
     # include trend in vector autoregression (True: yes, False: no)
     user_inputs['tab_2_ext']['trend'] = False
     
-    # include quadratic trend in regression (True: yes, False: no)
+    # include quadratic trend in vector autoregression (True: yes, False: no)
     user_inputs['tab_2_ext']['quadratic_trend'] = False      
     
     # endogenous lags to include in vector error correction
@@ -345,6 +345,121 @@ if user_inputs['tab_1']['model'] == 3:
     
     # varma: lag decay coefficient lambda3 (positive float)    
     user_inputs['tab_2_ext']['lambda3'] = 1    
+
+
+#---------------------------------------------------
+# Editable part: tab 2, Nowcasting
+#--------------------------------------------------- 
+
+
+# this applies only if the selected model is nowcasting (model = 4)
+if user_inputs['tab_1']['model'] == 4:
+
+    # choice of model (1: mixed frequency Bayesian VAR; 
+    # 2: Bayesian dynamic factor model; 3: Bayesian MIDAS regression)
+    user_inputs['tab_2_now']['model'] = 1
+    
+    # post-burn iterations for MCMC algorithm (integer)    
+    user_inputs['tab_2_now']['iterations'] = 3000 
+    
+    # burnin iterations for MCMC algorithm (integer)    
+    user_inputs['tab_2_now']['burnin'] = 1000
+    
+    # credibility level for model estimates (float between 0 and 1)    
+    user_inputs['tab_2_now']['model_credibility'] = 0.95
+    
+    # model for midas regression (integer between 1 and 9) ; 1/2/3 : unrestricted Minnesota/horsehoe/lasso
+    # 4/5/5 : almon Minnesota/horsehoe/lasso ; 7/8/9 : fourier Minnesota/horsehoe/lasso
+    user_inputs['tab_2_now']['midas_model'] = 1
+    
+    # midas: endogenous (autoregressive) lags (integer; can be 0)
+    user_inputs['tab_2_now']['midas_endogenous_lags'] = 1
+    
+    # midas: endogenous tightness (positive float)
+    user_inputs['tab_2_now']['midas_omega1'] = 0.01  
+    
+    # midas: endogenous lag decay (positive float)
+    user_inputs['tab_2_now']['midas_omega2'] = 1      
+    
+    # midas: polynomial order for parsimonious representation (integer)   
+    user_inputs['tab_2_now']['midas_polynomial_order'] = 2    
+    
+    # midas: exogenous lags: either integer for common value (e.g. 3),
+    # or list of values, one for each exogenous variable (e.g. [3 12 6])    
+    user_inputs['tab_2_now']['midas_exogenous_lags'] = 4
+    
+    # midas: exogenous tightness (positive float)   
+    user_inputs['tab_2_now']['midas_upsilon1'] = 0.1  
+
+    # midas: exogenous lag decay (positive float)     
+    user_inputs['tab_2_now']['midas_upsilon2'] = 1
+    
+    # mfbvar: include constant in vector autoregression (True: yes, False: no)    
+    user_inputs['tab_2_now']['mfbvar_constant'] = True
+    
+    # mfbvar: include trend in vector autoregression (True: yes, False: no)   
+    user_inputs['tab_2_now']['mfbvar_trend'] = False
+    
+    # mfbvar: include quadratic trend in vector autoregression (True: yes, False: no)    
+    user_inputs['tab_2_now']['mfbvar_quadratic_trend'] = False
+    
+    # mfbvar: apply frequency decomposition (True: yes, False: no)    
+    user_inputs['tab_2_now']['mfbvar_decomposition'] = False
+    
+    # mfbvar: endogenous lags to include in vector autoregression 
+    user_inputs['tab_2_now']['mfbvar_lags'] = 4
+    
+    # mfbvar: prior autoregressive coefficients: either scalar for common value (e.g. 0.9),
+    # or list of values, one for each AR coefficient (e.g. [0.9, 0.8, 0.75])    
+    user_inputs['tab_2_now']['mfbvar_ar_coefficients'] = 0.9
+    
+    # mfbvar: overall tightness coefficient pi1 (positive float)
+    user_inputs['tab_2_now']['mfbvar_pi1'] = 0.1
+    
+    # mfbvar: cross-variable shrinkage coefficient pi2 (positive float)
+    user_inputs['tab_2_now']['mfbvar_pi2'] = 0.5
+    
+    # mfbvar: lag decay coefficient pi3 (positive float)
+    user_inputs['tab_2_now']['mfbvar_pi3'] = 1
+    
+    # mfbvar: exogenous slackness coefficient pi4 (positive float)
+    user_inputs['tab_2_now']['mfbvar_pi4'] = 100
+    
+    # mfbvar: name of decomposition file, as string (e.g. 'decomposition.csv')
+    user_inputs['tab_2_now']['mfbvar_decomposition_file'] = ''   
+
+    # bdfm: number of structural factors (integer)   
+    user_inputs['tab_2_now']['dfm_factors'] = 3
+    
+    # bdfm: loadings lags (integer; can be 0)
+    user_inputs['tab_2_now']['dfm_loadings_lags'] = 2
+    
+    # bdfm: factor lags (integer)
+    user_inputs['tab_2_now']['dfm_factor_lags'] = 2
+    
+    # bdfm: residual lags (integer; can be 0)
+    user_inputs['tab_2_now']['dfm_residual_lags'] = 1
+    
+    # bdfm: loadings residual variance (positive float)
+    user_inputs['tab_2_now']['dfm_sigma'] = 0.1
+    
+    # bdfm: factor VAR residual variance (positive float)
+    user_inputs['tab_2_now']['dfm_omega'] = 0.1
+    
+    # bdfm: loadings overall tightness (positive float)
+    user_inputs['tab_2_now']['dfm_delta1'] = 0.1
+    
+    # bdfm: factor overall tightness (positive float)
+    user_inputs['tab_2_now']['dfm_pi1'] = 0.1
+    
+    # bdfm: cross-variable shrinkage coefficient pi2 (positive float)
+    user_inputs['tab_2_now']['dfm_pi2'] = 0.5
+    
+    # bdfm: lag decay coefficient pi3 (positive float)
+    user_inputs['tab_2_now']['dfm_pi3'] = 1    
+
+    # bdfm: residual overall tightness (positive float)
+    user_inputs['tab_2_now']['dfm_omega1'] = 0.1
 
 
 #---------------------------------------------------
@@ -425,4 +540,10 @@ elif model == 2:
 elif model == 3:
     from alexandria.vec_varma.main import vec_varma_main_code
     model = vec_varma_main_code(user_inputs)
+
+# else, if model is nowcasting, import main code for nowcasting, run it, and return model
+elif model == 4:
+    from alexandria.nowcasting.main import nowcasting_main_code
+    model = nowcasting_main_code(user_inputs)
+
 

@@ -10,6 +10,7 @@ from alexandria.interface.tab1_interface import Tab1Interface
 from alexandria.interface.tab2_regression_interface import Tab2RegressionInterface
 from alexandria.interface.tab2_vector_autoregression_interface import Tab2VectorAutoregressionInterface
 from alexandria.interface.tab2_vec_varma_interface import Tab2VecVarmaInterface
+from alexandria.interface.tab2_nowcasting_interface import Tab2NowcastingInterface
 from alexandria.interface.tab3_interface import Tab3Interface
 from alexandria.interface.tab4_interface import Tab4Interface
 from alexandria.interface.tab5_interface import Tab5Interface
@@ -18,7 +19,8 @@ from alexandria.interface.tab5_interface import Tab5Interface
 
 class GraphicalUserInterface(QMainWindow, DefaultInputInterface, Tab1Interface, \
                              Tab2RegressionInterface, Tab2VectorAutoregressionInterface, \
-                             Tab2VecVarmaInterface, Tab3Interface, Tab4Interface, Tab5Interface):
+                             Tab2VecVarmaInterface, Tab2NowcastingInterface, \
+                             Tab3Interface, Tab4Interface, Tab5Interface):
 
 
     #---------------------------------------------------
@@ -132,6 +134,7 @@ class GraphicalUserInterface(QMainWindow, DefaultInputInterface, Tab1Interface, 
         self.created_tab_2_lr = False
         self.created_tab_2_var = False
         self.created_tab_2_ext = False
+        self.created_tab_2_now = False
         # initiate user interrupt as True (will become False if interface is properly validated later)
         self.user_interrupt = True
         
@@ -175,7 +178,16 @@ class GraphicalUserInterface(QMainWindow, DefaultInputInterface, Tab1Interface, 
             # show tab 2 for var extensions
             self.show_tab_2_ext() 
             # set current tab as tab 2, var extensions
-            self.current_tab = 'tab_2_ext'            
+            self.current_tab = 'tab_2_ext'      
+        # else, if tab2 is called for nowcasting:
+        elif self.user_inputs['tab_1']['model'] == 4:
+            # if tab 2 for nowcasting does not exist, create it
+            if not self.created_tab_2_now:
+                self.create_tab_2_now()
+            # show tab 2 for nowcasting
+            self.show_tab_2_now() 
+            # set current tab as tab 2, nowcasting
+            self.current_tab = 'tab_2_now'             
         # update tab button color
         self.tab_pbt2.setStyleSheet("background:rgb" + str(self.tab_color) + ";")
 
@@ -214,6 +226,8 @@ class GraphicalUserInterface(QMainWindow, DefaultInputInterface, Tab1Interface, 
             self.create_tab_2_var()
         elif self.user_inputs['tab_1']['model'] == 3:
             self.create_tab_2_ext()
+        elif self.user_inputs['tab_1']['model'] == 4:
+            self.create_tab_2_now()
             
         
     def hide_current_tab(self):  
@@ -228,7 +242,10 @@ class GraphicalUserInterface(QMainWindow, DefaultInputInterface, Tab1Interface, 
             self.hide_tab_2_var()   
         # if current tab is tab 2 for var extension, hide it
         elif self.current_tab == 'tab_2_ext':
-            self.hide_tab_2_ext()              
+            self.hide_tab_2_ext()    
+        # if current tab is tab 2 for nowcasting, hide it
+        elif self.current_tab == 'tab_2_now':
+            self.hide_tab_2_now()              
         # if current tab is tab 3, hide it
         elif self.current_tab == 'tab_3':
             self.hide_tab_3()

@@ -33,7 +33,7 @@ def fit_single_variable(actual, fitted, dates, name):
     fig: matplotlib figure
         fitted figure
     """  
-    
+
     # create figure    
     fig = plt.figure(figsize = (6.60, 4.70), dpi = 500, tight_layout = True)
     min_YLim, max_YLim = set_min_and_max(np.hstack((actual,fitted)), 0.07, 0.1)
@@ -153,7 +153,7 @@ def var_fit_single_variable(actual, fitted, dates, name):
     fig: matplotlib figure
         fitted figure
     """  
-    
+
     # create figure    
     fig = plt.figure(figsize = (6.60, 4.70), dpi = 500, tight_layout = True)
     min_YLim, max_YLim = set_min_and_max(np.hstack((actual,fitted)), 0.07, 0.1)
@@ -498,6 +498,93 @@ def var_steady_state_all(actual, steady_state, dates, endogenous, n):
     return fig
 
 
+def factor_single_variable(factors, dates, number):
+
+    """
+    factor_single_variable(factors, dates)
+    produces factor figure for dfm, single variable
+    
+    parameters:     
+    factors: numpy ndarray of size (T,3)
+        factor values, median, lower and upper bounds
+    dates: datetime index of size (T)
+        index of in-sample dates
+    number: int
+        factor number between 1 and m
+        
+    returns:
+    fig: matplotlib figure
+        factor figure
+    """  
+
+    # create figure    
+    fig = plt.figure(figsize = (6.60, 4.70), dpi = 500, tight_layout = True)
+    min_YLim, max_YLim = set_min_and_max(factors, 0.07, 0.1)
+    # plot residuals with patched credibility intervals
+    patch_dates = np.hstack((dates, np.flipud(dates)))
+    patch_data = np.hstack((factors[:,1], np.flipud(factors[:,2])))
+    plt.fill(patch_dates, patch_data, facecolor = (0.3, 0.7, 0.2), alpha = 0.4)
+    plt.plot(dates, np.zeros(len(dates)), linewidth = 1, color = (0, 0, 0), linestyle='--', dashes=(5, 5))
+    plt.plot(dates, factors[:,0], linewidth = 1.5, color = (0, 0.5, 0))
+    # set graphic limits, background and font size for ticks
+    plt.xlim(dates[0], dates[-1])
+    plt.ylim(min_YLim, max_YLim)
+    plt.gca().set_facecolor(color = (0.9, 0.9, 0.9)) 
+    plt.grid(True, color = (0.8, 0.8, 0.8))
+    plt.title('Factor ' + number, fontdict = {'fontsize' : 14, \
+              'fontname': 'Serif', 'fontweight': 'semibold'}) 
+    plt.tick_params(axis = 'x', direction = 'in', labelsize = 12, labelrotation=20)    
+    return fig
+
+
+def factor_all(factors, dates, m):
+    
+    """
+    factor_all(factors, dates, m)
+    produces factor figure for DFM, all factors
+    
+    parameters:     
+    factors: numpy ndarray of size (T,m,3)
+        factor values, median, lower and upper bounds
+    dates: datetime index of size (T)
+        index of in-sample dates
+    m: int
+        number of factors
+        
+    returns:
+    fig: matplotlib figure
+        shock figure
+    """     
+
+    # get plot dimensions
+    columns = int(np.ceil(m ** 0.5))
+    rows = columns
+    # create figure    
+    fig = plt.figure(figsize = (6.60*columns, 4.70*rows), dpi = 500, tight_layout = True)
+    # loop over variables
+    for i in range(m):
+        # initiate subplot
+        plt.subplot(rows, columns, i+1)        
+        # get min and max for subplot
+        min_YLim, max_YLim = set_min_and_max(factors[:,i,:3], 0.07, 0.1)
+        # plot shocks with patched credibility intervals
+        patch_dates = np.hstack((dates, np.flipud(dates)))
+        patch_data = np.hstack((factors[:,i,1], np.flipud(factors[:,i,2])))
+        plt.fill(patch_dates, patch_data, facecolor = (0.3, 0.7, 0.2), alpha = 0.4)
+        if min_YLim < 0 and max_YLim > 0:
+            plt.plot(dates, np.zeros(len(dates)), linewidth = 1, color = (0, 0, 0), linestyle='--', dashes=(5, 5))  
+        plt.plot(dates, factors[:,i,0], linewidth = 1.5, color = (0, 0.5, 0))    
+        # set graphic limits, background and font size for ticks
+        plt.xlim(dates[0], dates[-1])
+        plt.ylim(min_YLim, max_YLim)
+        plt.gca().set_facecolor(color = (0.9, 0.9, 0.9)) 
+        plt.grid(True, color = (0.8, 0.8, 0.8))
+        plt.title('Factor ' + str(i+1), fontdict = {'fontsize' : 14, \
+                  'fontname': 'Serif', 'fontweight': 'semibold'}) 
+        plt.tick_params(axis = 'x', direction = 'in', labelsize = 12, labelrotation=20)
+    return fig
+
+
 def var_forecasts_single_variable(actual, forecasts, Y_p, dates, forecast_dates, name):
     
     """
@@ -828,7 +915,7 @@ def var_irf_all(irf, variables, shocks, n_endo, n_shocks):
         for j in range(n_shocks):
             # initiate subplot
             k += 1
-            plt.subplot(n_shocks, n_shocks, k)        
+            plt.subplot(n_endo, n_shocks, k)
             # get min and max for subplot
             min_YLim, max_YLim = set_min_and_max(irf[i,j,:,:], 0.07, 0.1)
             # plot IRF with patched credibility intervals
@@ -918,7 +1005,7 @@ def var_fevd_joint(fevd, name, shocks, n):
     fig: matplotlib figure
         FEVD figure
     """      
-    
+
     # periods to plot
     fevd_periods = np.arange(1,fevd.shape[0]+1)
     cum_fevd = np.cumsum(fevd,1)
@@ -956,10 +1043,10 @@ def var_fevd_joint(fevd, name, shocks, n):
     return fig
 
 
-def var_fevd_all(fevd, variables, shocks, n):
+def var_fevd_all(fevd, variables, shocks, n_endo, n_shocks):
     
     """
-    var_fevd_joint(fevd, name, shocks, n)
+    var_fevd_all(fevd, variables, shocks, n_endo, n_shocks)
     produces FEVD figure for var model, all variables to all shocks
     
     parameters:     
@@ -969,8 +1056,10 @@ def var_fevd_all(fevd, variables, shocks, n):
         name of variables for which figure is produced
     shocks: str
         name of shocks for which figure is produced        
-    n: int
+    n_endo: int
         number of endogenous variables
+    n_shocks: int
+        number of structural shocks
         
     returns:
     fig: matplotlib figure
@@ -980,13 +1069,13 @@ def var_fevd_all(fevd, variables, shocks, n):
     # periods to plot
     fevd_periods = np.arange(1,fevd.shape[2]+1)
     # get plot dimensions
-    columns = int(np.ceil(n ** 0.5))
+    columns = int(np.ceil(n_endo ** 0.5))
     rows = columns
     # create figure    
     fig = plt.figure(figsize = (6.60*columns, 4.70*rows), dpi = 500, tight_layout = True)
-    colors = make_colors(n)
+    colors = make_colors(n_shocks)
     # loop over variables
-    for i in range(n):
+    for i in range(n_endo):
         # initiate subplot
         plt.subplot(rows, columns, i+1)   
         # recover FEVD for this variable
@@ -996,7 +1085,7 @@ def var_fevd_all(fevd, variables, shocks, n):
             left_x_edge = period - 0.4
             right_x_edge = period + 0.4
             patch_periods = np.hstack([left_x_edge, right_x_edge, right_x_edge, left_x_edge])
-            for j in range(n):
+            for j in range(n_shocks):
                 if j == 0:
                     lower = 0
                 else:
@@ -1019,8 +1108,8 @@ def var_fevd_all(fevd, variables, shocks, n):
                   'fontname': 'Serif', 'fontweight': 'semibold'}) 
         plt.tick_params(axis = 'x', direction = 'in', labelsize = 12)     
         plt.legend(loc='upper center', bbox_to_anchor = (0.5, -0.05), ncol = 5, edgecolor = (0, 0, 0))
-    return fig            
-        
+    return fig                      
+       
 
 def var_hd_single_variable(hd, name, shock, dates):
     
@@ -1128,10 +1217,10 @@ def var_hd_joint(hd, name, shocks, dates, n, T):
     return fig  
 
     
-def var_hd_all(hd, variables, shocks, dates, n, T):
+def var_hd_all(hd, variables, shocks, dates, n_endo, n_shocks, T):
     
     """
-    var_hd_all(hd, variables, shocks, dates, n, T)
+    var_hd_all(hd, variables, shocks, dates, n_endo, n_shocks, T)
     produces HD figure for var model, all variables to all shocks
     
     parameters:     
@@ -1143,8 +1232,10 @@ def var_hd_all(hd, variables, shocks, dates, n, T):
         name of shocks for which figure is produced         
     dates: datetime index of size (T)
         index of in-sample dates
-    n: int
+    n_endo: int
         number of endogenous variables
+    n_shocks: int
+        number of structural shocks        
     T: int
         number of sample periods
         
@@ -1154,14 +1245,14 @@ def var_hd_all(hd, variables, shocks, dates, n, T):
     """      
 
     # get plot dimensions
-    columns = int(np.ceil(n ** 0.5))
+    columns = int(np.ceil(n_endo ** 0.5))
     rows = columns
     # create figure    
     fig = plt.figure(figsize = (6.60*columns, 4.70*rows), dpi = 500, tight_layout = True)
     patch_dates = np.hstack((dates, np.flipud(dates)))
-    colors = make_colors(n)   
+    colors = make_colors(n_shocks)   
     # loop over variables
-    for i in range(n):
+    for i in range(n_endo):
         # initiate subplot
         plt.subplot(rows, columns, i+1)  
         # recover HD for this variable
@@ -1171,7 +1262,7 @@ def var_hd_all(hd, variables, shocks, dates, n, T):
         positive_hd[positive_hd<0] = 0
         cum_positive_hd = np.cumsum(positive_hd,1)
         cum_positive_hd = np.hstack([np.zeros((T,1)),cum_positive_hd])    
-        for j in range(n):
+        for j in range(n_shocks):
             patch_data = np.hstack((cum_positive_hd[:,j+1], np.flipud(cum_positive_hd[:,j])))
             if j < 15:
                 plt.fill(patch_dates, patch_data, facecolor = colors[j], alpha = 0.4, label=shocks[j])
@@ -1183,7 +1274,7 @@ def var_hd_all(hd, variables, shocks, dates, n, T):
         negative_hd[negative_hd>0] = 0
         cum_negative_hd = np.cumsum(negative_hd,1)
         cum_negative_hd = np.hstack([np.zeros((T,1)),cum_negative_hd])    
-        for j in range(n):
+        for j in range(n_shocks):
             patch_data = np.hstack((cum_negative_hd[:,j+1], np.flipud(cum_negative_hd[:,j])))
             plt.fill(patch_dates, patch_data, facecolor = colors[j], alpha = 0.4)
             plt.plot(dates, cum_negative_hd[:,j+1], linewidth = 0.2, color = (0, 0, 0))        
@@ -1201,7 +1292,374 @@ def var_hd_all(hd, variables, shocks, dates, n, T):
         plt.legend(loc='upper center', bbox_to_anchor = (0.5, -0.05), ncol = 5, edgecolor = (0, 0, 0))
     return fig
 
+
+def nowcasting_fit_single_variable(actual, fitted, dates, name):
+
+    """
+    nowcasting_fit_single_variable(actual, fitted, dates, name)
+    produces fitted figure for nowcasting model, single variable
     
+    parameters:     
+    actual: numpy ndarray of size (T,1)
+        actual sample values
+    fitted: numpy ndarray of size (T,3)
+        fitted values, median, lower and upper bounds
+    dates: datetime index of size (T)
+        index of in-sample dates
+    name: str
+        name of variable for which figure is produced
+        
+    returns:
+    fig: matplotlib figure
+        fitted figure
+    """  
+
+    # create figure    
+    fig = plt.figure(figsize = (6.60, 4.70), dpi = 500, tight_layout = True)
+    min_YLim, max_YLim = set_min_and_max(np.hstack((actual,fitted)), 0.07, 0.1)
+    # plot actual, and fitted with patched credibility intervals
+    actual_mask = np.where(~np.isnan(actual))[0]
+    actual_dates = dates[actual_mask]
+    actual_data = actual[actual_mask]
+    patch_dates = np.hstack((dates, np.flipud(dates)))
+    patch_data = np.hstack((fitted[:,1], np.flipud(fitted[:,2])))
+    plt.fill(patch_dates, patch_data, facecolor = (0.3, 0.7, 0.2), alpha = 0.4)
+    plt.plot(dates, fitted[:,0], linewidth = 1.5, color = (0, 0.5, 0))
+    plt.plot(actual_dates, actual_data, linewidth = 1.5, color = (0.1, 0.3, 0.8))
+    # set graphic limits, background and font size for ticks
+    plt.xlim(dates[0], dates[-1])
+    plt.ylim(min_YLim, max_YLim)
+    plt.gca().set_facecolor(color = (0.9, 0.9, 0.9)) 
+    plt.grid(True, color = (0.8, 0.8, 0.8))
+    plt.title('Actual and fitted: ' + name, fontdict = {'fontsize' : 14, \
+              'fontname': 'Serif', 'fontweight': 'semibold'}) 
+    plt.tick_params(axis = 'x', direction = 'in', labelsize = 12, labelrotation=20)        
+    return fig
+
+
+def nowcasting_fit_all(actual, fitted, dates, endogenous, n):
+    
+    """
+    nowcasting_fit_all(actual, fitted, dates, endogenous, n)
+    produces fitted figure for var model, all variables
+    
+    parameters:     
+    actual: numpy ndarray of size (T,n)
+        actual sample values
+    fitted: numpy ndarray of size (T,n,3)
+        fitted values, median, lower and upper bounds
+    dates: datetime index of size (T)
+        index of in-sample dates
+    endogenous: str list
+        list of endogenous variables for which figure is produced
+    n: int
+        number of endogenous variables
+        
+    returns:
+    fig: matplotlib figure
+        fitted figure
+    """     
+
+    # get plot dimensions
+    columns = int(np.ceil(n ** 0.5))
+    rows = columns
+    # create figure    
+    fig = plt.figure(figsize = (6.60*columns, 4.70*rows), dpi = 500, tight_layout = True)
+    patch_dates = np.hstack((dates, np.flipud(dates)))
+    # loop over variables
+    for i in range(n):
+        # initiate subplot
+        plt.subplot(rows, columns, i+1)        
+        # get min and max for subplot
+        min_YLim, max_YLim = set_min_and_max(np.hstack((actual[:,[i]],fitted[:,i,:])), 0.07, 0.1)
+        # plot actual, and fitted with patched credibility intervals
+        actual_mask = np.where(~np.isnan(actual[:,i]))[0]
+        actual_dates = dates[actual_mask]
+        actual_data = actual[actual_mask]
+        patch_data = np.hstack((fitted[:,i,1], np.flipud(fitted[:,i,2])))
+        plt.fill(patch_dates, patch_data, facecolor = (0.3, 0.7, 0.2), alpha = 0.4)
+        plt.plot(dates, fitted[:,i,0], linewidth = 1.5, color = (0, 0.5, 0))
+        plt.plot(actual_dates, actual_data[:,i], linewidth = 1.5, color = (0.1, 0.3, 0.8))        
+        # set graphic limits, background and font size for ticks
+        plt.xlim(dates[0], dates[-1])
+        plt.ylim(min_YLim, max_YLim)
+        plt.gca().set_facecolor(color = (0.9, 0.9, 0.9)) 
+        plt.grid(True, color = (0.8, 0.8, 0.8))
+        name = endogenous[i]
+        plt.title('Actual and fitted: ' + name, fontdict = {'fontsize' : 14, \
+                  'fontname': 'Serif', 'fontweight': 'semibold'}) 
+        plt.tick_params(axis = 'x', direction = 'in', labelsize = 12, labelrotation=20)   
+    return fig
+
+
+def nowcasting_forecasts_single_variable(actual, forecasts, Y_p, dates, forecast_dates, name):
+    
+    """
+    nowcasting_forecasts_single_variable(actual, forecasts, Y_p, dates, forecast_dates, name)
+    produces forecast figure for var model, single variable
+    
+    parameters:     
+    actual: numpy ndarray of size (T,1)
+        actual sample values
+    forecasts: numpy ndarray of size (f_periods,3)
+        forecast values, median, lower and upper bounds
+    Y_p: numpy ndarray of size (f_periods,1)
+        actual out-of-sample values    
+    dates: datetime index of size (T)
+        index of in-sample dates
+    forecast_dates: datetime index of size (f_periods)
+        index of forecast dates        
+    name: str
+        name of variable for which figure is produced
+        
+    returns:
+    fig: matplotlib figure
+        forecast figure
+    """      
+
+    # periods to plot
+    T = max(10, 2 * forecasts.shape[0])
+    sample_data = actual[-T:]
+    sample_dates = dates[-T:]
+    sample_mask = np.where(~np.isnan(sample_data))[0]
+    sample_dates = sample_dates[sample_mask]
+    sample_data = sample_data[sample_mask].reshape(-1,1)
+    T = sample_data.shape[0]
+    if len(Y_p) == 0:
+        plot_data = np.vstack([np.tile(sample_data,[1,3]),forecasts])
+    else:
+        plot_data = np.vstack([np.tile(sample_data,[1,4]),np.hstack([forecasts,Y_p])])
+    plot_dates = np.hstack([sample_dates,forecast_dates])
+    prediction_data = plot_data[T-1:]
+    prediction_dates = plot_dates[T-1:]
+    # create figure    
+    fig = plt.figure(figsize = (6.60, 4.70), dpi = 500, tight_layout = True)
+    min_YLim, max_YLim = set_min_and_max(plot_data, 0.07, 0.1)
+    # plot actual, and forecasts with patched credibility intervals
+    patch_dates = np.hstack((prediction_dates, np.flipud(prediction_dates)))
+    patch_data = np.hstack((prediction_data[:,1], np.flipud(prediction_data[:,2])))
+    plt.fill(patch_dates, patch_data, facecolor = (0.3, 0.7, 0.2), alpha = 0.4)
+    plt.plot(prediction_dates, prediction_data[:,0], linewidth = 1.5, color = (0, 0.5, 0))
+    if len(Y_p) != 0:
+        plt.plot(prediction_dates, prediction_data[:,3], linewidth = 1.5, linestyle='--', color = (0.1, 0.3, 0.8))
+    plt.plot(sample_dates, sample_data, linewidth = 1.5, color = (0.1, 0.3, 0.8))
+    # set graphic limits, background and font size for ticks
+    plt.xlim(plot_dates[0], plot_dates[-1])
+    plt.ylim(min_YLim, max_YLim)
+    plt.gca().set_facecolor(color = (0.9, 0.9, 0.9)) 
+    plt.grid(True, color = (0.8, 0.8, 0.8))
+    plt.title('Forecasts: ' + name, fontdict = {'fontsize' : 14, \
+              'fontname': 'Serif', 'fontweight': 'semibold'}) 
+    plt.tick_params(axis = 'x', direction = 'in', labelsize = 12, labelrotation=20)    
+    return fig
+
+
+def nowcasting_forecasts_all(actual, forecasts, Y_p, dates, forecast_dates, endogenous, n):
+
+    """
+    nowcasting_forecasts_all(actual, forecasts, dates, forecast_dates, endogenous, n)
+    produces forecast figure for var model, all variables
+    
+    parameters:     
+    actual: numpy ndarray of size (T,n)
+        actual sample values
+    forecasts: numpy ndarray of size (f_periods,n,3)
+        forecast values, median, lower and upper bounds
+    Y_p: numpy ndarray of size (f_periods,n)
+        actual out-of-sample values
+    dates: datetime index of size (T)
+        index of in-sample dates
+    forecast_dates: datetime index of size (f_periods)
+        index of in-sample dates            
+    endogenous: str list
+        list of endogenous variables for which figure is produced
+    n: int
+        number of endogenous variables
+        
+    returns:
+    fig: matplotlib figure
+        forecast figure
+    """      
+
+    # get plot dimensions
+    columns = int(np.ceil(n ** 0.5))
+    rows = columns  
+    # create figure    
+    fig = plt.figure(figsize = (6.60*columns, 4.70*rows), dpi = 500, tight_layout = True)
+    # loop over variables
+    for i in range(n):
+        T = max(10, 2 * forecasts.shape[0]) 
+        sample_data = actual[-T:,[i]]
+        sample_dates = dates[-T:]
+        sample_mask = np.where(~np.isnan(sample_data))[0]
+        sample_dates = sample_dates[sample_mask]
+        sample_data = sample_data[sample_mask]   
+        T = sample_data.shape[0]        
+        if len(Y_p) == 0:
+            plot_data = np.vstack([np.tile(sample_data,[1,3]),forecasts[:,i,:]])
+        else:
+            plot_data = np.vstack([np.tile(sample_data,[1,4]),np.hstack([forecasts[:,i,:],Y_p[:,[i]]])])        
+        plot_dates = np.hstack([sample_dates,forecast_dates])
+        prediction_data = plot_data[T-1:]
+        prediction_dates = plot_dates[T-1:]         
+        # initiate subplot
+        plt.subplot(rows, columns, i+1)        
+        # get min and max for subplot
+        min_YLim, max_YLim = set_min_and_max(plot_data, 0.07, 0.1)
+        # plot actual, and steady-state with patched credibility intervals
+        patch_dates = np.hstack((prediction_dates, np.flipud(prediction_dates)))
+        patch_data = np.hstack((prediction_data[:,1], np.flipud(prediction_data[:,2])))
+        plt.fill(patch_dates, patch_data, facecolor = (0.3, 0.7, 0.2), alpha = 0.4)
+        plt.plot(prediction_dates, prediction_data[:,0], linewidth = 1.5, color = (0, 0.5, 0))
+        if len(Y_p) != 0:
+            plt.plot(prediction_dates, prediction_data[:,3], linewidth = 1.5, linestyle='--', color = (0.1, 0.3, 0.8))        
+        plt.plot(sample_dates, sample_data, linewidth = 1.5, color = (0.1, 0.3, 0.8))     
+        # set graphic limits, background and font size for ticks
+        plt.xlim(plot_dates[0], plot_dates[-1])
+        plt.ylim(min_YLim, max_YLim)
+        plt.gca().set_facecolor(color = (0.9, 0.9, 0.9)) 
+        plt.grid(True, color = (0.8, 0.8, 0.8))
+        name = endogenous[i]
+        plt.title('Forecasts: ' + name, fontdict = {'fontsize' : 14, \
+                  'fontname': 'Serif', 'fontweight': 'semibold'}) 
+        plt.tick_params(axis = 'x', direction = 'in', labelsize = 12, labelrotation=20)   
+    return fig
+
+
+def nowcasting_conditional_forecasts_single_variable(actual, forecasts, Y_p, dates, forecast_dates, name):
+    
+    """
+    nowcasting_conditional_forecasts_single_variable(actual, forecasts, dates, forecast_dates, name)
+    produces forecast figure for var model, single variable
+    
+    parameters:     
+    actual: numpy ndarray of size (T,1)
+        actual sample values
+    forecasts: numpy ndarray of size (f_periods,3)
+        forecast values, median, lower and upper bounds
+    Y_p: numpy ndarray of size (f_periods,1)
+        actual out-of-sample values    
+    dates: datetime index of size (T)
+        index of in-sample dates
+    forecast_dates: datetime index of size (f_periods)
+        index of forecast dates        
+    name: str
+        name of variable for which figure is produced
+        
+    returns:
+    fig: matplotlib figure
+        forecast figure
+    """      
+
+    # periods to plot
+    T = max(10, 2 * forecasts.shape[0])
+    sample_data = actual[-T:]
+    sample_dates = dates[-T:]
+    sample_mask = np.where(~np.isnan(sample_data))[0]
+    sample_dates = sample_dates[sample_mask]
+    sample_data = sample_data[sample_mask]   
+    T = sample_data.shape[0]
+    if len(Y_p) == 0:
+        plot_data = np.vstack([np.tile(sample_data,[1,3]),forecasts])
+    else:
+        plot_data = np.vstack([np.tile(sample_data,[1,4]),np.hstack([forecasts,Y_p])])
+    plot_dates = np.hstack([sample_dates,forecast_dates])
+    prediction_data = plot_data[T-1:]
+    prediction_dates = plot_dates[T-1:]
+    # create figure    
+    fig = plt.figure(figsize = (6.60, 4.70), dpi = 500, tight_layout = True)
+    min_YLim, max_YLim = set_min_and_max(plot_data, 0.07, 0.1)
+    # plot actual, and forecasts with patched credibility intervals
+    patch_dates = np.hstack((prediction_dates, np.flipud(prediction_dates)))
+    patch_data = np.hstack((prediction_data[:,1], np.flipud(prediction_data[:,2])))
+    plt.fill(patch_dates, patch_data, facecolor = (0.3, 0.7, 0.2), alpha = 0.4)
+    plt.plot(prediction_dates, prediction_data[:,0], linewidth = 1.5, color = (0, 0.5, 0))
+    if len(Y_p) != 0:
+        plt.plot(prediction_dates, prediction_data[:,3], linewidth = 1.5, linestyle='--', color = (0.1, 0.3, 0.8))
+    plt.plot(sample_dates, sample_data, linewidth = 1.5, color = (0.1, 0.3, 0.8))
+    # set graphic limits, background and font size for ticks
+    plt.xlim(plot_dates[0], plot_dates[-1])
+    plt.ylim(min_YLim, max_YLim)
+    plt.gca().set_facecolor(color = (0.9, 0.9, 0.9)) 
+    plt.grid(True, color = (0.8, 0.8, 0.8))
+    plt.title('Conditional forecasts: ' + name, fontdict = {'fontsize' : 14, \
+              'fontname': 'Serif', 'fontweight': 'semibold'}) 
+    plt.tick_params(axis = 'x', direction = 'in', labelsize = 12, labelrotation=20)    
+    return fig
+
+
+def nowcasting_conditional_forecasts_all(actual, forecasts, Y_p, dates, forecast_dates, endogenous, n):
+
+    """
+    nowcasting_conditional_forecasts_all(actual, forecasts, dates, forecast_dates, endogenous, n)
+    produces forecast figure for var model, all variables
+    
+    parameters:     
+    actual: numpy ndarray of size (T,n)
+        actual sample values
+    forecasts: numpy ndarray of size (f_periods,n,3)
+        forecast values, median, lower and upper bounds
+    Y_p: numpy ndarray of size (f_periods,n)
+        actual out-of-sample values
+    dates: datetime index of size (T)
+        index of in-sample dates
+    forecast_dates: datetime index of size (f_periods)
+        index of in-sample dates            
+    endogenous: str list
+        list of endogenous variables for which figure is produced
+    n: int
+        number of endogenous variables
+        
+    returns:
+    fig: matplotlib figure
+        forecast figure
+    """      
+
+    # get plot dimensions
+    columns = int(np.ceil(n ** 0.5))
+    rows = columns  
+    # create figure    
+    fig = plt.figure(figsize = (6.60*columns, 4.70*rows), dpi = 500, tight_layout = True)
+    # loop over variables
+    for i in range(n):
+        T = max(10, 2 * forecasts.shape[0]) 
+        sample_data = actual[-T:,[i]]
+        sample_dates = dates[-T:]
+        sample_mask = np.where(~np.isnan(sample_data))[0]
+        sample_dates = sample_dates[sample_mask]
+        sample_data = sample_data[sample_mask]   
+        T = sample_data.shape[0]        
+        if len(Y_p) == 0:
+            plot_data = np.vstack([np.tile(sample_data,[1,3]),forecasts[:,i,:]])
+        else:
+            plot_data = np.vstack([np.tile(sample_data,[1,4]),np.hstack([forecasts[:,i,:],Y_p[:,[i]]])])        
+        plot_dates = np.hstack([sample_dates,forecast_dates])
+        prediction_data = plot_data[T-1:]
+        prediction_dates = plot_dates[T-1:]         
+        # initiate subplot
+        plt.subplot(rows, columns, i+1)        
+        # get min and max for subplot
+        min_YLim, max_YLim = set_min_and_max(plot_data, 0.07, 0.1)
+        # plot actual, and steady-state with patched credibility intervals
+        patch_dates = np.hstack((prediction_dates, np.flipud(prediction_dates)))
+        patch_data = np.hstack((prediction_data[:,1], np.flipud(prediction_data[:,2])))
+        plt.fill(patch_dates, patch_data, facecolor = (0.3, 0.7, 0.2), alpha = 0.4)
+        plt.plot(prediction_dates, prediction_data[:,0], linewidth = 1.5, color = (0, 0.5, 0))
+        if len(Y_p) != 0:
+            plt.plot(prediction_dates, prediction_data[:,3], linewidth = 1.5, linestyle='--', color = (0.1, 0.3, 0.8))        
+        plt.plot(sample_dates, sample_data, linewidth = 1.5, color = (0.1, 0.3, 0.8))     
+        # set graphic limits, background and font size for ticks
+        plt.xlim(plot_dates[0], plot_dates[-1])
+        plt.ylim(min_YLim, max_YLim)
+        plt.gca().set_facecolor(color = (0.9, 0.9, 0.9)) 
+        plt.grid(True, color = (0.8, 0.8, 0.8))
+        name = endogenous[i]
+        plt.title('Conditional forecasts: ' + name, fontdict = {'fontsize' : 14, \
+                  'fontname': 'Serif', 'fontweight': 'semibold'}) 
+        plt.tick_params(axis = 'x', direction = 'in', labelsize = 12, labelrotation=20)   
+    return fig
+
+
 def set_min_and_max(data, min_space, max_space):
     
     """
@@ -1224,13 +1682,13 @@ def set_min_and_max(data, min_space, max_space):
     """
     
     # get min, max, and compute window width
-    min_value = np.amin(data)
-    max_value = np.amax(data)
+    min_value = np.nanmin(data)
+    max_value = np.nanmax(data)
     width = max_value - min_value
     min_YLim = min_value - min_space * width
     max_YLim = max_value + max_space * width
     return min_YLim, max_YLim  
-    
+
     
 def show_and_save(current_figure, show, save, path, file_name):
     

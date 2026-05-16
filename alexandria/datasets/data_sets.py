@@ -133,6 +133,45 @@ class DataSets(object):
         return data
 
 
+    def load_japan_table(self):
+        
+        """
+        load_japan_table()
+        load the Japan dataset as a Pandas dataframe
+        
+        parameters:
+        none
+        
+        returns:
+        data : Pandas dataframe
+            dataframe containing the Japan dataset
+        """
+            
+        file_path = self.__get_file_path('japan')
+        data = pd.read_csv(file_path, delimiter = ',', index_col = 0)
+        data.index = pd.to_datetime(data.index)
+        return data
+
+
+    def load_japan(self):
+        
+        """
+        load_japan()
+        load the raw Japan dataset as a Numpy ndarray
+        
+        parameters:
+        none
+        
+        returns:
+        data : Numpy ndarray
+            array containing the raw data for the Japan dataset
+        """
+        
+        dataframe = self.load_japan_table()
+        data = dataframe.values
+        return data
+
+
     #---------------------------------------------------
     # Methods (Access = private)
     #--------------------------------------------------- 

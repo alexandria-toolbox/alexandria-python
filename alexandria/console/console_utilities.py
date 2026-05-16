@@ -190,7 +190,7 @@ def write_string_list(string_list, filepath):
     """      
 
     string_list_with_breaks = [string + '\n' for string in string_list]
-    file = open(filepath,'w')
+    file = open(filepath,'w',encoding='utf-8')
     file.writelines(string_list_with_breaks)
     file.close()
 
@@ -237,7 +237,7 @@ def alexandria_header():
     header.append('     /_/ /_/ /_/  \___/  /_/\_\ \__,_/ /_/ /_/ \____/ /_/   /_/  \__,_/        ')
     header.append('                                                                               ')
     header.append('     The library of Bayesian time-series models                                ')
-    header.append('     V 2.0 - Copyright Ⓒ  Romain Legrand                                      ')       
+    header.append('     V 3.0 - Copyright Ⓒ  Romain Legrand                                      ')       
     header.append('   ========================================================================    ')
     header.append('                                                                               ')        
     header.append('                                                                               ')     
@@ -523,6 +523,45 @@ def make_regressors(endogenous, exogenous, constant, trend, quadratic_trend, n, 
     return regressors
 
 
+def make_dfm_regressors(m, q, p, r):
+
+    """
+    make_dfm_regressors(m, q, p, r)
+    list of regressors for dynamic factor model
+    
+    m : int
+        number of latent factors
+    q : int
+        number of loadings lags
+    p : int
+        number of factor lags
+    r : int
+        number of residual lags
+        
+    returns:
+    loadings_regressors: str list
+        list of string containing the loadings regressors       
+    factor_regressors: str list
+        list of string containing the factor regressors   
+    residual_regressors: str list
+        list of string containing the residual regressors           
+    """
+
+    loadings_regressors = []
+    for i in range(m):
+        loadings_regressors.append('factor' + str(i+1))
+        for j in range(q):
+            loadings_regressors.append('factor' + str(i+1) + ' (-' + str(j+1) + ')')
+    factor_regressors = []
+    for i in range(m):
+        for j in range(p):
+            factor_regressors.append('factor' + str(i+1) + ' (-' + str(j+1) + ')')  
+    residual_regressors = []
+    for i in range(r):
+        residual_regressors.append('resid (-' + str(i+1) + ')')
+    return loadings_regressors, factor_regressors, residual_regressors
+
+
 def make_index(n, m, p, k):
 
     """
@@ -543,7 +582,7 @@ def make_index(n, m, p, k):
     index: ndarray of size (k,)
         array of indices
     """
-
+    
     index = np.zeros(k)
     i = -1
     for j in range(m):
@@ -554,6 +593,44 @@ def make_index(n, m, p, k):
             i = i + 1
             index[i] = m + h * n + g
     return index
+
+
+def make_dfm_index(k, l, m, q, p):
+
+    """
+    k : int
+        factor VAR coefficients per equation
+    l : int
+        regression coefficients per loading equation
+    m : int
+        number of latent factors
+    q : int
+        number of loadings lags
+    p : int
+        number of factor lags
+    r : int
+        number of residual lags
+        
+    returns:
+    loadings_index: ndarray of size (l,)
+        array of loadings indices  
+    factor_index: ndarray of size (k,)
+        array of factor indices          
+    """
+
+    loadings_index = np.zeros(l)
+    i = -1
+    for a in range(m):
+        for b in range(q+1):
+            i = i + 1
+            loadings_index[i] = b * m + a
+    factor_index = np.zeros(k)
+    i = -1
+    for a in range(m):
+        for b in range(p):
+            i = i + 1
+            factor_index[i] = b * m + a
+    return loadings_index, factor_index
 
 
 def variance_line(residual_variance, shock_variance):

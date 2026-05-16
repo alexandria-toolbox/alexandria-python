@@ -92,6 +92,7 @@ class Tab1Interface(object):
         self.t1_mnu1.addItem('1. linear regression', 1)
         self.t1_mnu1.addItem('2. vector autoregression', 2)
         self.t1_mnu1.addItem('3. vec/varma', 3)
+        self.t1_mnu1.addItem('4. nowcasting', 4)
         self.t1_mnu1.setCurrentIndex(self.user_inputs['tab_1']['model'] - 1)
         self.t1_mnu1.activated.connect(self.cb_t1_mnu1)
         

@@ -415,7 +415,7 @@ class IndependentBayesianVar(VectorAutoRegression,BayesianVar):
         self.burnin = burnin
         self.verbose = verbose  
         # make regressors
-        self._make_regressors()
+        self.__make_regressors()
         # make delta
         self._make_delta()        
         # make individual residual variance

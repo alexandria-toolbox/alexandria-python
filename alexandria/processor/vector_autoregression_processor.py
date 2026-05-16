@@ -561,13 +561,14 @@ class VectorAutoregressionProcessor(object):
                 self.forecast_file, self.forecast_evaluation, self.forecast_periods, 'endogenous variable')      
             # if there are exogenous variables in the model
             if self.exogenous_variables:
-                # check that exogenous variables are found in data
-                iu.check_variables(data, self.forecast_file, self.exogenous_variables, 'exogenous variables')
+                # load in-sample data to fill missing variables
+                in_sample_data = iu.load_data(self.project_path, self.data_file)
+                in_sample_data = in_sample_data[self.exogenous_variables].iloc[-2:].values
                 # load exogenous data
-                Z_p = iu.fetch_forecast_data(data, [], self.exogenous_variables, 
+                Z_p = iu.fetch_forecast_data(data, in_sample_data, self.exogenous_variables, 
                 self.forecast_file, True, self.forecast_periods, 'exogenous variable')   
         return Z_p, Y_p, forecast_dates
-    
+        
     
     def __get_condition_table(self):
         # if conditional forecast is selected, load data

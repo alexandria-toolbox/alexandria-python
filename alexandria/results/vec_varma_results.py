@@ -652,7 +652,7 @@ class VecVarmaResults(object):
                 variable = endogenous_variables[i]
                 header = [variable+'_actual', variable+'_med', variable+'_low', variable+'_upp']
                 insample_dataframe = pd.DataFrame(index=insample_index,columns=header)
-                insample_dataframe.iloc[:,0] = Y[:,0]
+                insample_dataframe.iloc[:,0] = Y[:,i]
                 insample_dataframe.iloc[-1,:] = insample_dataframe.iloc[-1,0]
                 prediction_dataframe = pd.DataFrame(index=forecast_index,columns=header)
                 prediction_dataframe.iloc[:,1:4] = forecasts[:,i,:]

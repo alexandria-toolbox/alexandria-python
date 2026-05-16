@@ -55,7 +55,10 @@ elif model == 3:
     from alexandria.vec_varma.main import vec_varma_main_code
     model = vec_varma_main_code(user_inputs)
 
-
+# else, if model is nowcasting, import main code for nowcasting, run it, and return model
+elif model == 4:
+    from alexandria.nowcasting.main import nowcasting_main_code
+    model = nowcasting_main_code(user_inputs)
 
 
 

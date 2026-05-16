@@ -13,6 +13,9 @@ from .vector_autoregression.large_bayesian_var import LargeBayesianVar
 from .vector_autoregression.bayesian_proxy_svar import BayesianProxySvar
 from .vec_varma.vector_error_correction import VectorErrorCorrection
 from .vec_varma.vector_autoregressive_moving_average import VectorAutoregressiveMovingAverage
+from .nowcasting.bayesian_dynamic_factor_model import BayesianDynamicFactorModel
+from .nowcasting.mixed_frequency_bayesian_var import MixedFrequencyBayesianVar
+from .nowcasting.bayesian_midas_regression import BayesianMidasRegression
 from .interface.graphical_user_interface import GraphicalUserInterface
 from .state_space.bayesian_state_space_sampler import BayesianStateSpaceSampler
 from .datasets.data_sets import DataSets

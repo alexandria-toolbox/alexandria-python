@@ -338,6 +338,46 @@ def fetch_data(data, file, start_date, end_date, variables, tag):
     return sample
 
 
+def fetch_nan_data(data, file, start_date, end_date, variables, tag):
+    
+    """
+    fetch_nan_data(data, file, start_date, end_date, variables, tag)
+    fetches variables from data at given sample dates
+    
+    parameters: 
+    data : pandas dataframe
+        dataframe containing loaded data
+    file : str
+        name of data file (with extension csv, xls or xlsx)         
+    start_date : str
+        sample start date to search in dataframe index
+    end_date : str
+        sample end date to search in dataframe index        
+    variables : list of str
+        list of endogenous variables to search in dataframe
+    tag : str
+        tag to apply in error message, if any (e.g. "Endogenous variables")
+        
+    returns:
+    sample : ndarray
+        ndarray containing fetched data, possibly containing NaNs
+    """
+    
+    # if variable list is not empty, recover sample for given variables and dates
+    if variables:
+        sample = data.loc[start_date:end_date, variables]
+        # test for non-numerical values (strings), and if any, raise error
+        if 'O' in sample.dtypes.tolist():
+            raise TypeError('Data error for file ' + file + '. ' + tag + ' contains text entries, which are unhandled.')
+        # else, data is valid: convert to numpy array
+        else:
+            sample = sample.copy().values
+    # if no variable, return empty list    
+    else:
+        sample = []
+    return sample
+
+
 def infer_date_format(frequency, file, start_date, end_date):
 
     """
@@ -456,7 +496,7 @@ def generate_dates(data, date_format, frequency, file, start_date, end_date):
     dates : datetime index
         index of Datetime entries
     """
-    
+
     dates = data.loc[start_date:end_date].index
     if frequency == 1:
         dates = _generate_undated_dates(dates, date_format, file)
@@ -573,17 +613,20 @@ def fetch_forecast_data(data, insample_data, variables, file, required, periods,
     sample_p : ndarray
         ndarray containing forecast data   
     """
-    
+
     # find any missing variable
     missing_variables = [variable for variable in variables if variable not in data]
     # if some variables are missing
     if missing_variables:
         # if variables are required and no in-sample data is provided, raise error
-        if required and not insample_data:
+        if required and len(insample_data) == 0:
             raise TypeError('Data error for file ' + file + '. ' + tag + ' ' + ", ".join(missing_variables) + ' required to conduct forecast (or forecast evaluation), but cannot be found.')
         # if variables are required but some in-sample data is provided, replicate final in-sample value
-        elif required and insample_data:
+        elif required and len(insample_data) > 0:
             sample_p = np.tile(insample_data[-1,:], (periods,1))
+            # test for NaNs, and if any, raise error
+            if np.isnan(sample_p).any():
+                raise TypeError('Data error for exogenous. No prediction provided in ' + file + ' and final in-sample value is NaN, which is unhandled for forecasting.')            
         # if not required, return empty list
         else:
             sample_p = []
@@ -885,7 +928,38 @@ def check_condition_table(data, endogenous_variables, periods, file):
                 shock = data.iloc[i].loc['shock' + str(j+1)]
                 if shock not in [0,1]:
                     raise TypeError('Data error for file '  + file + '. Entry in row 1, column "shock' + str(j+1) + '" should be 0 or 1.') 
-            
+     
+        
+def check_decomposition_table(data, endogenous_variables, file):
+    
+    """
+    check_decomposition_table(data, endogenous_variables, file)
+    checks whether mfbvar decomposition table is of valid format
+    
+    parameters:
+    data : pandas dataframe
+        dataframe containing constrained coefficient information
+    endogenous_variables : list of strings
+        list containing the names of endogenous variables
+    file : str
+        name of data file (with extension csv, xls or xlsx)
+
+    returns:
+    none
+    """
+
+    columns = data.columns.to_list()
+    if columns != endogenous_variables:
+        raise TypeError('Data error for file '  + file + '. Column names don\'t match the set of endogenous variables.')
+    rows = data.index.to_list()
+    if rows != ['periods']:
+        raise TypeError('Data error for file '  + file + '. Index name should be "periods".')
+    number_endogenous = len(endogenous_variables)
+    for i in range(number_endogenous):
+        period = data.loc['periods',endogenous_variables[i]]
+        if not is_integer(period):
+            raise TypeError('Data error for file '  + file + '. Entry in column ' + endogenous_variables[i] + ' is not integer.')  
+             
 
 def get_condition_table(data, endogenous_variables):
     
@@ -1145,6 +1219,18 @@ def identify_model(model):
         model_name = 'Bayesian Vector Autoregressive Moving Average'
         model_class = 3
         model_type = 2
+    elif class_name == 'MixedFrequencyBayesianVar':
+        model_name = 'Mixed Frequency Bayesian Var'
+        model_class = 4
+        model_type = 1        
+    elif class_name == 'BayesianDynamicFactorModel':
+        model_name = 'Bayesian Dynamic Factor Model'
+        model_class = 4
+        model_type = 2          
+    elif class_name == 'BayesianMidasRegression':
+        model_name = 'Bayesian Midas Regression'
+        model_class = 4
+        model_type = 3        
     return model_name, model_class, model_type
 
 

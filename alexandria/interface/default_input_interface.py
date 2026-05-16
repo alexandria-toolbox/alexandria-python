@@ -25,6 +25,7 @@ class DefaultInputInterface(object):
         user_inputs['tab_2_lr'] = {}
         user_inputs['tab_2_var'] = {}
         user_inputs['tab_2_ext'] = {}
+        user_inputs['tab_2_now'] = {}
         user_inputs['tab_3'] = {}
         
         # default values for tab 1
@@ -128,6 +129,42 @@ class DefaultInputInterface(object):
         user_inputs['tab_2_ext']['lambda1'] = '0.1'
         user_inputs['tab_2_ext']['lambda2'] = '0.5'
         user_inputs['tab_2_ext']['lambda3'] = '1'    
+        
+        # default values for tab 2, nowcasting
+        user_inputs['tab_2_now']['model'] = 1
+        user_inputs['tab_2_now']['iterations'] = '3000'        
+        user_inputs['tab_2_now']['burnin'] = '1000'
+        user_inputs['tab_2_now']['model_credibility'] = '0.95'
+        user_inputs['tab_2_now']['midas_endogenous_lags'] = '1'
+        user_inputs['tab_2_now']['midas_exogenous_lags'] = '4'
+        user_inputs['tab_2_now']['midas_polynomial_order'] = '2'
+        user_inputs['tab_2_now']['midas_model'] = 1
+        user_inputs['tab_2_now']['midas_omega1'] = '0.01'        
+        user_inputs['tab_2_now']['midas_omega2'] = '1'     
+        user_inputs['tab_2_now']['midas_upsilon1'] = '0.1'        
+        user_inputs['tab_2_now']['midas_upsilon2'] = '1'
+        user_inputs['tab_2_now']['mfbvar_constant'] = True
+        user_inputs['tab_2_now']['mfbvar_trend'] = False
+        user_inputs['tab_2_now']['mfbvar_quadratic_trend'] = False
+        user_inputs['tab_2_now']['mfbvar_decomposition'] = False
+        user_inputs['tab_2_now']['mfbvar_lags'] = '4'
+        user_inputs['tab_2_now']['mfbvar_ar_coefficients'] = '0.9'
+        user_inputs['tab_2_now']['mfbvar_pi1'] = '0.1'
+        user_inputs['tab_2_now']['mfbvar_pi2'] = '0.5'
+        user_inputs['tab_2_now']['mfbvar_pi3'] = '1'
+        user_inputs['tab_2_now']['mfbvar_pi4'] = '100'        
+        user_inputs['tab_2_now']['mfbvar_decomposition_file'] = ''        
+        user_inputs['tab_2_now']['dfm_factors'] = '3'
+        user_inputs['tab_2_now']['dfm_loadings_lags'] = '2'
+        user_inputs['tab_2_now']['dfm_factor_lags'] = '2'
+        user_inputs['tab_2_now']['dfm_residual_lags'] = '1'
+        user_inputs['tab_2_now']['dfm_sigma'] = '0.1'   
+        user_inputs['tab_2_now']['dfm_omega'] = '0.1'   
+        user_inputs['tab_2_now']['dfm_delta1'] = '0.1'  
+        user_inputs['tab_2_now']['dfm_pi1'] = '0.1'
+        user_inputs['tab_2_now']['dfm_pi2'] = '0.5'
+        user_inputs['tab_2_now']['dfm_pi3'] = '1'        
+        user_inputs['tab_2_now']['dfm_omega1'] = '0.1'  
         
         # default values for tab 3
         user_inputs['tab_3']['forecast'] = False

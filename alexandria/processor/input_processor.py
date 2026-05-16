@@ -2,10 +2,11 @@
 from alexandria.processor.regression_processor import RegressionProcessor
 from alexandria.processor.vector_autoregression_processor import VectorAutoregressionProcessor
 from alexandria.processor.vec_varma_processor import VecVarmaProcessor
+from alexandria.processor.nowcasting_processor import NowcastingProcessor
 import alexandria.processor.input_utilities as iu
 
 
-class InputProcessor(RegressionProcessor, VectorAutoregressionProcessor, VecVarmaProcessor):
+class InputProcessor(RegressionProcessor, VectorAutoregressionProcessor, VecVarmaProcessor, NowcastingProcessor):
 
 
     #---------------------------------------------------
@@ -49,7 +50,10 @@ class InputProcessor(RegressionProcessor, VectorAutoregressionProcessor, VecVarm
             self._make_var_information()
         # if model is model 3, additionally make information for VEC/VARMA models
         elif self.model == 3:
-            self._make_vec_varma_information()            
+            self._make_vec_varma_information()
+        # if model is model 4, additionally make information for nowcasting models
+        elif self.model == 4:
+            self._make_nowcasting_information()           
         # finally add complementary information for applications
         self.__make_application_information()
             
@@ -73,6 +77,9 @@ class InputProcessor(RegressionProcessor, VectorAutoregressionProcessor, VecVarm
         # if model is model 3, additionally make information for VEC/VARMA
         elif self.model == 3:
             self._make_vec_varma_graphics_information()
+        # if model is model 4, additionally make information for nowcasting
+        elif self.model == 4:
+            self._make_nowcasting_graphics_information()
             
 
     #---------------------------------------------------
@@ -108,11 +115,14 @@ class InputProcessor(RegressionProcessor, VectorAutoregressionProcessor, VecVarm
         if self.model == 1:
             self._regression_inputs()
         # if model is model 2, get user inputs for vector autoregression
-        elif self.model ==2:
+        elif self.model == 2:
             self._vector_autoregression_inputs()
         # if model is model 3, get user inputs for vec/varma
-        elif self.model ==3:
+        elif self.model == 3:
             self._vec_varma_inputs()
+        # if model is model 4, get user inputs for nowcasting
+        elif self.model == 4:
+            self._nowcasting_inputs()
             
         
     def __tab_3_inputs(self):
@@ -164,12 +174,15 @@ class InputProcessor(RegressionProcessor, VectorAutoregressionProcessor, VecVarm
         # else, if model is model 3, get data for vec/varma
         elif self.model == 3:
             self._vec_varma_data()
+        # else, if model is model 4, get data for nowcasting
+        elif self.model == 4:
+            self._nowcasting_data()
             
              
     def __get_model(self):
         model = self.user_inputs['tab_1']['model']
-        if model not in [1,2,3]:
-            raise TypeError('Value error for model. Should be 1, 2 or 3.')
+        if model not in [1,2,3,4]:
+            raise TypeError('Value error for model. Should be 1, 2, 3 or 4.')
         return model
         
     

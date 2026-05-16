@@ -3,12 +3,13 @@ from datetime import datetime
 from alexandria.results.regression_results import RegressionResults
 from alexandria.results.vector_autoregression_results import VectorAutoregressionResults
 from alexandria.results.vec_varma_results import VecVarmaResults
+from alexandria.results.nowcasting_results import NowcastingResults
 import alexandria.console.console_utilities as cu
 import alexandria.processor.input_utilities as iu
 from os.path import join
 
 
-class Results(RegressionResults, VectorAutoregressionResults, VecVarmaResults):
+class Results(RegressionResults, VectorAutoregressionResults, VecVarmaResults, NowcastingResults):
     
     
     #---------------------------------------------------
@@ -63,6 +64,9 @@ class Results(RegressionResults, VectorAutoregressionResults, VecVarmaResults):
         # if model is VEC/VARMA, make VAR extension summary
         elif model_class == 3:
             self._make_vec_varma_summary() 
+        # if model is nowcasting, make nowcasting summary
+        elif model_class == 4:
+            self._make_nowcasting_summary() 
             
         
     def show_estimation_summary(self):
@@ -94,6 +98,9 @@ class Results(RegressionResults, VectorAutoregressionResults, VecVarmaResults):
         # if model is VEC/VARMA, make VAR extension summary
         elif model_class == 3:
             self._make_vec_varma_application_summary() 
+        # if model is nowcasting, make nowcasting summary
+        elif model_class == 4:
+            self._make_nowcasting_application_summary() 
             
         
     def save_application_summary(self, path):
@@ -110,6 +117,9 @@ class Results(RegressionResults, VectorAutoregressionResults, VecVarmaResults):
         # if model is VEC/VARMA, save VAR extension summary
         elif model_class == 3:
             self._save_vec_varma_application(path)  
+        # if model is nowcasting, save nowcasting summary
+        elif model_class == 4:
+            self._save_nowcasting_application(path) 
             
     
     #---------------------------------------------------
@@ -128,7 +138,10 @@ class Results(RegressionResults, VectorAutoregressionResults, VecVarmaResults):
             self._complete_var_information()
         # if model is VEC/VARMA, add extension elements
         elif self.complementary_information['model_class'] == 3:
-            self._complete_vec_varma_information()            
+            self._complete_vec_varma_information()   
+        # if model is nowcasting, add nowcasting elements
+        elif self.complementary_information['model_class'] == 4:
+            self._complete_nowcasting_information()             
         # add application information
         self.__complete_application_information()
 
@@ -223,7 +236,9 @@ class Results(RegressionResults, VectorAutoregressionResults, VecVarmaResults):
         elif model_class == 2:
             model = 'vector autoregression'    
         elif model_class == 3:
-            model = 'vec / varma'    
+            model = 'vec / varma'   
+        elif model_class == 4:
+            model = 'nowcasting'             
         lines.append('selected model: ' + model)
         # endogenous variables
         endogenous_variables = iu.list_to_string(self.complementary_information['endogenous_variables'])
@@ -273,6 +288,8 @@ class Results(RegressionResults, VectorAutoregressionResults, VecVarmaResults):
             self._add_var_tab_2_inputs()
         elif self.complementary_information['model_class'] == 3:
             self._add_vec_varma_tab_2_inputs()
+        elif self.complementary_information['model_class'] == 4:
+            self._add_nowcasting_tab_2_inputs()
             
 
     def __add_tab_3_inputs(self):
@@ -283,4 +300,7 @@ class Results(RegressionResults, VectorAutoregressionResults, VecVarmaResults):
             self._add_var_tab_3_inputs()
         elif self.complementary_information['model_class'] == 3:
             self._add_vec_varma_tab_3_inputs()            
-
+        elif self.complementary_information['model_class'] == 4:
+            self._add_nowcasting_tab_3_inputs()  
+            
+            

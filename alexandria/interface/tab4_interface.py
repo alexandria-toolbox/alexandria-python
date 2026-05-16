@@ -515,7 +515,7 @@ class Tab4Interface(object):
         applications = list(dict.fromkeys([element[0] for element in split_image_list]))
         # reorganize applications so that they are in the right order
         sorted_applications = []        
-        possible_applications = ['fit', 'residuals', 'shocks', 'steady_state', 'forecasts', \
+        possible_applications = ['fit', 'residuals', 'shocks', 'steady_state', 'factors', 'forecasts', \
                                  'conditional_forecasts', 'irf', 'fevd', 'hd']
         for application in possible_applications:
             if application in applications:

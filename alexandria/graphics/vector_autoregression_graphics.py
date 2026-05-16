@@ -255,7 +255,7 @@ class VectorAutoregressionGraphics(object):
                 fig = gu.var_fevd_joint(fevd[i,:,:,0].T, endogenous[i], shocks, n)
                 gu.show_and_save(fig, show, save, path, file_name)
             # joint graph
-            fig = gu.var_fevd_all(fevd, endogenous, shocks, n)
+            fig = gu.var_fevd_all(fevd, endogenous, shocks, n, n)
             gu.show_and_save(fig, show, save, path, 'fevd-all.png') 
             
             
@@ -282,7 +282,7 @@ class VectorAutoregressionGraphics(object):
                 fig = gu.var_hd_joint(hd[i,:,:,0].T, endogenous[i], shocks, dates, n, T)
                 gu.show_and_save(fig, show, save, path, file_name)
             # joint graph
-            fig = gu.var_hd_all(hd, endogenous, shocks, dates, n, T)
+            fig = gu.var_hd_all(hd, endogenous, shocks, dates, n, n, T)
             gu.show_and_save(fig, show, save, path, 'hd-all.png')             
             
             
